@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>KPI管理＋久保田式預け金</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;color:#111;}
+:root{
+  --bg:#fff;--bg2:#f5f5f5;--bg3:#ebebeb;
+  --border:#e0e0e0;--border2:#ccc;
+  --text:#111;--text2:#666;--text3:#999;
+  --r:12px;--rm:8px;
+  --c-blue:#2563EB;--c-green:#16A34A;--c-red:#DC2626;--c-gold:#B45309;
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#1a1a1a;--bg2:#242424;--bg3:#2e2e2e;--border:#333;--border2:#444;--text:#f0f0f0;--text2:#aaa;--text3:#666;}
+}
+.app{width:100%;max-width:430px;margin:0 auto;padding:0 0 4rem;font-size:14px;background:var(--bg);min-height:100vh;}
+.tab-bar{display:flex;border-bottom:0.5px solid var(--border);margin-bottom:1rem;position:sticky;top:0;background:var(--bg);z-index:10;}
+.tab{flex:1;padding:8px 2px;font-size:11px;font-weight:500;text-align:center;border:none;background:none;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;}
+.tab.active{color:var(--c-blue);border-bottom-color:var(--c-blue);}
+.section{display:none;padding:0 12px;}
+.section.active{display:block;}
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px;}
+.week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.nav-btn{background:none;border:0.5px solid var(--border);border-radius:var(--rm);padding:6px 12px;font-size:12px;color:var(--text2);cursor:pointer;}
+.wl{font-size:13px;font-weight:500;color:var(--text);}
+.kpi-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.kpi-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.kpi-title{font-size:13px;font-weight:500;color:var(--text);}
+.kpi-badge{font-size:11px;color:var(--text2);margin-left:auto;}
+.kpi-table{width:100%;border-collapse:separate;border-spacing:0 2px;}
+.th-day{font-size:11px;color:var(--text2);text-align:center;padding-bottom:6px;}
+.th-label{width:44px;}
+.th-total{width:34px;font-size:11px;color:var(--text2);text-align:center;padding-bottom:6px;}
+.cell-label{font-size:11px;font-weight:500;color:var(--text2);padding-right:4px!important;white-space:nowrap;vertical-align:middle;}
+.cell-goal{background:var(--bg2);text-align:center;font-size:12px;color:var(--text2);border-radius:4px;padding:5px 2px!important;vertical-align:middle;}
+.cell-goal-total{background:var(--bg2);text-align:center;font-size:12px;font-weight:600;color:var(--text2);border-radius:4px;padding:5px 2px!important;vertical-align:middle;}
+.cell-actual{text-align:center;vertical-align:middle;padding:2px!important;}
+.cell-actual-total{text-align:center;font-size:14px;font-weight:700;padding:4px 2px!important;vertical-align:middle;}
+.cell-diff{text-align:center;font-size:12px;font-weight:500;border-radius:4px;padding:5px 2px!important;vertical-align:middle;}
+.diff-pos{background:#E1F5EE;color:#0F6E56;}
+.diff-neg{background:#FAECE7;color:#D85A30;}
+.diff-zero{color:var(--text2);}
+.cell-diff-total{text-align:center;font-size:12px;font-weight:700;border-radius:4px;padding:5px 2px!important;vertical-align:middle;}
+.tap-cell{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.tap-display{font-size:15px;font-weight:700;color:var(--text);min-width:28px;text-align:center;line-height:1;padding:2px 0;}
+.tap-display.pop{animation:pop .18s ease;}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)}}
+.btn-plus{width:36px;height:36px;border-radius:50%;border:none;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;transition:transform .1s,opacity .1s;-webkit-tap-highlight-color:transparent;user-select:none;}
+.btn-plus:active{transform:scale(.88);opacity:.85;}
+.btn-minus{width:24px;height:24px;border-radius:50%;border:0.5px solid var(--border2);background:var(--bg2);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:transform .1s;-webkit-tap-highlight-color:transparent;user-select:none;}
+.btn-minus:active{transform:scale(.88);}
+.chart-wrap{position:relative;width:100%;height:180px;margin-top:14px;}
+.chart-legend{display:flex;gap:14px;margin-top:6px;justify-content:center;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);}
+.legend-line{width:18px;height:2px;border-radius:1px;}
+.legend-line.dashed{background:repeating-linear-gradient(90deg,#aaa 0,#aaa 4px,transparent 4px,transparent 8px);}
+.summary-row{display:flex;gap:8px;margin-bottom:12px;}
+.stat-card{flex:1;background:var(--bg2);border-radius:var(--rm);padding:10px;}
+.stat-label{font-size:11px;color:var(--text2);margin-bottom:4px;}
+.stat-val{font-size:18px;font-weight:500;}
+.sec-title{font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em;}
+.note-area{width:100%;border:0.5px solid var(--border);border-radius:var(--rm);padding:10px;font-size:13px;min-height:80px;background:var(--bg);color:var(--text);resize:none;}
+.save-btn{width:100%;padding:10px;background:var(--c-blue);color:#fff;border:none;border-radius:var(--rm);font-size:14px;font-weight:500;cursor:pointer;margin-top:8px;}
+.save-btn:active{opacity:.85;}
+.goal-input{width:100%;border:0.5px solid var(--border);border-radius:6px;padding:6px 2px;text-align:center;font-size:13px;font-weight:600;background:var(--bg);color:var(--text);-moz-appearance:textfield;}
+.goal-input::-webkit-inner-spin-button,.goal-input::-webkit-outer-spin-button{-webkit-appearance:none;}
+.goal-input:focus{outline:none;border-color:var(--c-blue);}
+.kpi-name-input{width:100%;border:0.5px solid var(--border);border-radius:var(--rm);padding:7px 10px;font-size:13px;background:var(--bg);color:var(--text);}
+.color-pick{display:flex;gap:8px;}
+.color-opt{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;}
+.color-opt.selected{border-color:var(--text);}
+.s-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.s-row label{font-size:12px;color:var(--text2);width:36px;flex-shrink:0;}
+.pct-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.pct-label{font-size:12px;color:var(--text2);width:40px;flex-shrink:0;}
+.pct-bar-wrap{flex:1;height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;}
+.pct-bar{height:100%;border-radius:4px;transition:width .4s ease,background .4s ease;}
+.pct-val{font-size:13px;font-weight:500;width:38px;text-align:right;flex-shrink:0;}
+.judge-inline{border-radius:var(--rm);padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1.5px solid;margin-top:8px;-webkit-tap-highlight-color:transparent;transition:opacity .1s;}
+.judge-inline:active{opacity:.8;}
+.judge-inline-achieve{background:#F0FDF4;border-color:#86EFAC;}
+.judge-inline-fail{background:#FEF2F2;border-color:#FCA5A5;}
+.judge-done-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 10px;border-radius:10px;background:var(--bg2);color:var(--text2);margin-top:8px;}
+.banner-row{display:flex;gap:8px;margin-bottom:10px;}
+.ach-banner{flex:1;display:flex;align-items:center;gap:8px;padding:10px;border-radius:var(--rm);cursor:pointer;border:0.5px solid;transition:opacity .1s;-webkit-tap-highlight-color:transparent;}
+.ach-banner:active{opacity:.75;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .25s;}
+.overlay.show{opacity:1;pointer-events:all;}
+.sheet{width:100%;max-width:430px;background:var(--bg);border-radius:20px 20px 0 0;padding:20px 16px 36px;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);max-height:90vh;overflow-y:auto;}
+.overlay.show .sheet{transform:translateY(0);}
+.sh-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 18px;}
+.sh-emoji{font-size:36px;text-align:center;margin-bottom:8px;}
+.sh-title{font-size:17px;font-weight:500;color:var(--text);text-align:center;margin-bottom:5px;}
+.sh-sub{font-size:12px;color:var(--text2);text-align:center;margin-bottom:20px;line-height:1.6;}
+.reward-cards{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
+.reward-card{border:0.5px solid var(--border);border-radius:var(--r);padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;-webkit-tap-highlight-color:transparent;}
+.reward-card.selected{border:1.5px solid #16A34A;background:#F0FDF4;}
+.rc-num{font-size:11px;color:var(--text2);width:18px;flex-shrink:0;}
+.rc-text{font-size:14px;color:var(--text);line-height:1.5;}
+.penalty-box{border:1.5px solid #DC2626;border-radius:var(--r);padding:18px;margin-bottom:18px;background:#FEF2F2;text-align:center;}
+.pb-label{font-size:10px;font-weight:500;color:#DC2626;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;}
+.pb-text{font-size:15px;font-weight:500;color:#7F1D1D;line-height:1.6;}
+.modal-btn{width:100%;padding:13px;border:none;border-radius:var(--rm);font-size:15px;font-weight:500;color:#fff;cursor:pointer;}
+.modal-btn:active{opacity:.85;}
+.modal-sub{width:100%;padding:10px;border:none;background:none;font-size:13px;color:var(--text2);cursor:pointer;margin-top:6px;}
+.usage-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}
+.usage-opt{border:0.5px solid var(--border);border-radius:var(--rm);padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;-webkit-tap-highlight-color:transparent;}
+.usage-opt.selected{border:1.5px solid var(--c-blue);background:#EFF6FF;}
+.uoi{font-size:20px;flex-shrink:0;}
+.uot{font-size:13px;color:var(--text);line-height:1.4;}
+.dep-hero{border-radius:var(--r);padding:16px;margin-bottom:12px;border:0.5px solid #F59E0B;background:#FFFBEB;}
+.d-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.d-stat{background:var(--bg);border-radius:var(--rm);padding:10px 12px;}
+.d-sl{font-size:10px;color:var(--text2);margin-bottom:3px;}
+.d-sv{font-size:18px;font-weight:500;}
+.p-card{border:0.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;}
+.p-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.p-label{font-size:13px;font-weight:500;color:var(--text);}
+.sk-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:3px 8px;border-radius:10px;margin-bottom:8px;}
+.sk-ok{background:#DCFCE7;color:#16A34A;}
+.sk-w{background:#FEF3C7;color:#92400E;}
+.sk-d{background:#FEE2E2;color:#DC2626;}
+.j-row{display:flex;gap:8px;margin-top:8px;}
+.j-btn{flex:1;padding:10px 6px;border-radius:var(--rm);font-size:12px;font-weight:500;cursor:pointer;border:none;-webkit-tap-highlight-color:transparent;transition:opacity .1s;}
+.j-btn:active{opacity:.8;}
+.j-ach{background:#DCFCE7;color:#16A34A;}
+.j-fail{background:#FEE2E2;color:#DC2626;}
+.j-ex{background:var(--bg2);color:var(--text2);}
+.h-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--border);}
+.h-item:last-child{border-bottom:none;}
+.hbadge{font-size:10px;font-weight:500;padding:2px 7px;border-radius:10px;white-space:nowrap;flex-shrink:0;margin-top:2px;}
+.ba{background:#DCFCE7;color:#16A34A;}
+.bf{background:#FEE2E2;color:#DC2626;}
+.be{background:#F3F4F6;color:#6B7280;}
+.rule-item{display:flex;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--border);font-size:12px;line-height:1.5;color:var(--text);}
+.rule-item:last-child{border-bottom:none;}
+.rn{color:var(--text2);flex-shrink:0;width:20px;}
+.cap-warn{background:#FEF3C7;border:0.5px solid #F59E0B;border-radius:var(--rm);padding:8px 12px;font-size:12px;color:#92400E;margin-bottom:10px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">KPI管理＋久保田式預け金</h1>
+  <div class="tab-bar">
+    <button class="tab active" onclick="showTab('weekly')">📅<br>週次</button>
+    <button class="tab" onclick="showTab('monthly')">📊<br>月次</button>
+    <button class="tab" onclick="showTab('yearly')">📈<br>年間</button>
+    <button class="tab" onclick="showTab('deposit')">💰<br>預け金</button>
+    <button class="tab" onclick="showTab('settings')">⚙️<br>設定</button>
+  </div>
+  <div id="tab-weekly" class="section active">
+    <div class="week-nav">
+      <button class="nav-btn" onclick="changeWeek(-1)">‹ 前週</button>
+      <span class="wl" id="week-label"></span>
+      <button class="nav-btn" onclick="changeWeek(1)">次週 ›</button>
+    </div>
+    <div id="kpi-cards"></div>
+  </div>
+  <div id="tab-monthly" class="section">
+    <div class="week-nav">
+      <button class="nav-btn" onclick="changeMonth(-1)">‹ 前月</button>
+      <span class="wl" id="month-label"></span>
+      <button class="nav-btn" onclick="changeMonth(1)">翌月 ›</button>
+    </div>
+    <div id="monthly-summary"></div>
+    <div class="card" style="margin-top:4px;">
+      <div class="sec-title">月次メモ</div>
+      <textarea class="note-area" id="month-note" placeholder="今月の振り返り・気づき..."></textarea>
+      <button class="save-btn" onclick="saveNote()">保存</button>
+    </div>
+  </div>
+  <div id="tab-yearly" class="section">
+    <div class="week-nav">
+      <button class="nav-btn" onclick="changeYear(-1)">‹ 前年</button>
+      <span class="wl" id="year-label"></span>
+      <button class="nav-btn" onclick="changeYear(1)">翌年 ›</button>
+    </div>
+    <div id="yearly-content"></div>
+  </div>
+  <div id="tab-deposit" class="section"><div id="deposit-content"></div></div>
+  <div id="tab-settings" class="section"><div id="settings-content"></div></div>
+</div>
+
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-emoji" id="sh-emoji"></div>
+    <div class="sh-title" id="sh-title"></div>
+    <div class="sh-sub" id="sh-sub"></div>
+    <div id="sh-body"></div>
+    <button class="modal-btn" id="sh-btn"></button>
+    <button class="modal-sub" onclick="closeModal()">閉じる</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const DAYS = ['月','火','水','木','金'];
+const ML = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const KC = ['#2563EB','#0F6E56','#D85A30'];
+const DB = {day:500, week:3500, month:25000};
+const DL = {day:'日次', week:'週次', month:'月次'};
+const MFC = 25000;
+const FU = ['募金する','家族へのプレゼントに使う','後輩への差し入れに使う'];
+const AU = ['好きな食事・外食に使う','好きなものを買う','サウナ・マッサージ・旅行に使う','貯金・次の預け金として積み立てる'];
+const AI = ['🍣','🛍️','🧖','💰'];
+const FI = ['🙏','🎁','🍱'];
+
+const RL = {
+  day: {
+    reward: ["漫画を30分読む","Netflixを1話だけ見る","YouTubeを30分だけ見る","オナニー1回OK","コンビニコーヒー1杯買う","好きなアイスを1個食べる","チョコ・お菓子を1個食べる","オナニー1回OK","寿司を5貫まで食べてOK","オナニー1回OK","漫画を30分読む","好きな音楽を20分聴く","20分昼寝OK","入浴剤を使って風呂20分","カフェでドリンク1杯","コンビニスイーツ1個","オナニー1回OK","500円以内で好きな飲み物","スマホゲーム・アプリ20分","ベッドでゴロゴロ20分","好きなラジオ・音声を30分","カップ麺1個OK","焼き鳥2本までOK","缶コーヒー・エナドリ1本","好きな本を15分読む","好きな動画を1本見る","10分だけ何もしない時間","オナニー1回OK","500円以内のご褒美購入","今日は罪悪感なしで30分休憩"],
+    penalty: ["募金300円＋机の上を10分片付ける","募金500円＋トイレ掃除を10分する","募金700円＋スクワット50回","募金1,000円＋腕立て伏せ30回","募金1,500円＋腹筋ローラー15回","部屋を20分掃除する","洗面台・鏡・蛇口を15分掃除する","トイレ掃除を15分する","床を15分拭き掃除する","玄関と靴を15分整理する","カバンの中を全部出して15分整理する","車内のゴミを全部捨てて15分掃除する","スクワット100回","腕立て伏せ50回","腹筋ローラー20回","プランク90秒×3セット","30分ウォーキング","15分ランニング","営業トークを10分音読する","営業ロープレを10分録音する","保険・営業の勉強を30分する","FP・簿記などの勉強を30分する","SNS投稿ネタを10個書き出す","お礼ハガキ候補を5人書き出す","営業先リストを5件追加する","未完了タスクを3つ完了させる","LINE・メールの未処理を10件確認する","スマホを2時間禁止して仕事か掃除をする","夜の自由時間を60分削って片付けをする","募金2,000円＋30分掃除する"]
+  },
+  week: {
+    reward: ["漫画喫茶に2時間行く","漫画喫茶に3時間行く","漫画を3冊買う","Netflixで映画1本見る","Netflixを2時間見る","ラーメン1杯食べる","ラーメン＋替え玉1回OK","寿司を10貫食べる","回転寿司で2,000円までOK","ピザMサイズを半分までOK","焼肉ランチ2,500円までOK","ステーキランチ2,500円までOK","サウナ・温泉に1回行く","マッサージ30分","整体・ストレッチ30分","カフェで読書1時間","好きなカフェで1,500円まで","好きな服・小物を3,000円まで購入","文房具を2,000円まで購入","香水・整髪料など3,000円まで","友達と食事3,000円まで","一人外食3,000円まで","映画館で映画1本","好きな本を1冊買う","週末に朝寝坊＋追加睡眠1時間","昼寝を90分OK","好きなスイーツを2個まで","コンビニで1,000円まで好きに買う","好きな動画・ドラマを3時間","週末の夜に完全自由時間2時間"],
+    penalty: ["募金1,000円＋部屋を30分掃除する","募金1,500円＋車内を30分掃除する","募金2,000円＋営業先リストを10件追加する","募金3,000円＋お礼ハガキを3枚書く","募金5,000円＋FP・簿記などの勉強を60分する","部屋を60分掃除する","車内・トランクを60分掃除する","机・棚・書類まわりを60分整理する","洗面所・風呂場・トイレを合計60分掃除する","クローゼットを60分整理する","靴を3足磨く","スーツ・シャツを10着整理する","書類を50枚整理する","名刺を50枚整理する","スマホ写真を200枚整理する","メールを30件整理する","LINE・メールの未処理を20件確認する","営業先リストを20件追加する","見込み客を10人書き出す","お礼ハガキを5枚書く","SNS投稿案を10本作る","営業ロープレを20分録音する","録音した営業ロープレを20分聞き直す","FP・簿記などの勉強を90分する","読書を60分して要点5個メモする","腕立て伏せ100回＋スクワット100回","60分ウォーキング","スマホを半日禁止して掃除か勉強をする","週末の自由時間を3時間削って仕事準備をする","募金7,000円＋部屋を60分掃除する"]
+  },
+  month: {
+    reward: ["漫画を10冊買う","漫画を15冊まで大人買い","漫画喫茶に5時間行く","漫画喫茶に半日行く","Netflixを半日楽しむ","Netflixで映画3本見る","高めの寿司を8,000円まで食べる","回らない寿司を10,000円まで","ラーメン屋を2店舗開拓","ピザLサイズ1枚を好きに食べる","焼肉を10,000円まで食べる","ステーキを10,000円まで食べる","うなぎ・高級ランチ8,000円まで","サウナ付きホテルに1泊","日帰り旅行1回","温泉旅行1回・予算20,000円まで","マッサージ90分","整体・美容系に10,000円まで","美容室＋眉毛カット","服を20,000円まで買う","靴を20,000円まで買う","仕事用バッグ・小物を20,000円まで","香水を15,000円まで買う","良い文房具を10,000円まで買う","一日完全オフを作る","朝から昼まで寝てOK","友達と食事15,000円まで","風俗1回・予算上限30,000円まで","欲しかった物を30,000円まで買う","自分へのご褒美予算50,000円まで"],
+    penalty: ["募金5,000円＋部屋全体を2時間掃除する","募金7,000円＋車内・トランクを2時間掃除する","募金10,000円＋営業先リストを30件追加する","募金15,000円＋お礼ハガキを10枚書く","募金20,000円＋FP・簿記などの勉強を3時間する","募金30,000円＋半日スマホ禁止で仕事をする","部屋全体を3時間掃除する","車内・トランク・洗車を合計3時間する","仕事道具を3時間整理する","書類を150枚整理する","名刺を150枚整理する","パソコンのデータを3時間整理する","スマホ写真を1,000枚整理する","メールを100件整理する","LINE・メールの未処理を50件確認する","営業先リストを50件追加する","見込み客を30人書き出す","お礼ハガキを15枚書く","SNS投稿案を30本作る","営業ロープレを60分録音する","録音した営業ロープレを60分聞き直す","FP・簿記などの勉強を5時間する","読書1冊＋要点20個まとめる","未完了タスクを50個書き出す","未完了タスクを10個完了させる","クローゼットを3時間整理する","家の不要物を50個捨てる","休日の午前中4時間を掃除・整理・勉強に使う","1ヶ月の反省点を50個書き出す","募金50,000円＋来月の改善行動を50個作る"]
+  }
+};
+
+let ST = JSON.parse(localStorage.getItem('kpi_v11') || 'null') || {
+  kpis: [
+    {name:'新規商談数', goals:[5,5,5,5,5], color:0},
+    {name:'架電数',     goals:[20,20,20,20,20], color:1},
+    {name:'提案書提出', goals:[3,3,3,3,3], color:2}
+  ],
+  data:{}, notes:{},
+  deposit:{streaks:{day:0,week:0,month:0}, monthlyForfeit:{}, history:[], judged:{}}
+};
+ST.kpis.forEach(k => {
+  if (typeof k.goal === 'number' && !k.goals) { k.goals = [k.goal,k.goal,k.goal,k.goal,k.goal]; delete k.goal; }
+  if (!k.goals) k.goals = [5,5,5,5,5];
+});
+if (!ST.deposit) ST.deposit = {streaks:{day:0,week:0,month:0}, monthlyForfeit:{}, history:[], judged:{}};
+if (!ST.deposit.judged) ST.deposit.judged = {};
+
+let curWk = getWeekKey(new Date());
+let vMonth = new Date().getMonth();
+let vYear  = new Date().getFullYear();
+let charts = {}, modalSel = -1, dCtx = null;
+
+function sv()  { localStorage.setItem('kpi_v11', JSON.stringify(ST)); }
+function fmt(n){ return Number(n).toLocaleString() + '円'; }
+function toStr(){ const d=new Date(); return (d.getMonth()+1)+'/'+d.getDate(); }
+function mkKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function wkToday(){ return getWeekKey(new Date()); }
+
+function getWeekKey(d) {
+  const day = d.getDay(), diff = d.getDate() - day + (day===0 ? -6 : 1);
+  const m = new Date(d); m.setDate(diff); return m.toISOString().slice(0,10);
+}
+function fmtWk(k) {
+  const m = new Date(k), f = new Date(k); f.setDate(f.getDate()+4);
+  const s = d => (d.getMonth()+1)+'/'+d.getDate(); return s(m)+'〜'+s(f);
+}
+function changeWeek(d)  { const dt=new Date(curWk); dt.setDate(dt.getDate()+d*7); curWk=getWeekKey(dt); renderWeekly(); }
+function changeMonth(d) { vMonth+=d; if(vMonth<0){vMonth=11;vYear--;} if(vMonth>11){vMonth=0;vYear++;} renderMonthly(); }
+function changeYear(d)  { vYear+=d; renderYearly(); }
+
+function getData(wk,ki,di) { return ST.data[wk]?.[ki]?.[di] ?? 0; }
+function setData(wk,ki,di,val) {
+  if (!ST.data[wk]) ST.data[wk] = {};
+  if (!ST.data[wk][ki]) ST.data[wk][ki] = {};
+  ST.data[wk][ki][di] = Math.max(0, Number(val));
+  sv(); updateRow(ki, wk);
+  const el = document.getElementById('disp-'+ki+'-'+di);
+  if (el) { el.textContent = ST.data[wk][ki][di]; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+  if (wk === wkToday()) updateJudgeBanners();
+}
+function tap(ki,di,d) { setData(curWk, ki, di, getData(curWk,ki,di)+d); }
+function wgt(ki) { return ST.kpis[ki].goals.reduce((s,g) => s+g, 0); }
+
+function calcDayPct(wk,di) {
+  let a=0,g=0; ST.kpis.forEach((kpi,ki) => { a+=getData(wk,ki,di); g+=kpi.goals[di]; }); return g>0 ? Math.round(a/g*100) : 0;
+}
+function calcWeekPct(wk) {
+  let a=0,g=0; ST.kpis.forEach((kpi,ki) => { for(let d=0;d<5;d++){a+=getData(wk,ki,d);g+=kpi.goals[d];} }); return g>0 ? Math.round(a/g*100) : 0;
+}
+function calcMonthPct(y,m) {
+  const wks=getMonthWeeks(y,m); let a=0,g=0;
+  ST.kpis.forEach((kpi,ki) => { wks.forEach(wk => { for(let d=0;d<5;d++){a+=getData(wk,ki,d);g+=kpi.goals[d];} }); });
+  return g>0 ? Math.round(a/g*100) : 0;
+}
+
+function updateJudgeBanners() {
+  const now=new Date(), dow=now.getDay(), dom=now.getDate();
+  const lastDay = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+  const tw=wkToday(), di=Math.min(dow===0?4:Math.max(dow-1,0), 4);
+  const dayPct=calcDayPct(tw,di), weekPct=calcWeekPct(tw), monthPct=calcMonthPct(now.getFullYear(),now.getMonth());
+  const dayJK='day_'+tw+'_'+toStr(), wkJK='week_'+tw, moJK='month_'+mkKey();
+  setBar('b-day',   dayPct);
+  setBar('b-week',  weekPct);
+  setBar('b-month', monthPct);
+  updatePeriodBtn('judge-day',   'day',   dayPct,   dayJK, true);
+  updatePeriodBtn('judge-week',  'week',  weekPct,  wkJK,  dow===0||dow===6);
+  updatePeriodBtn('judge-month', 'month', monthPct, moJK,  dom>=lastDay-1);
+}
+
+function setBar(id, pct) {
+  const bar=document.getElementById(id+'-bar'), val=document.getElementById(id+'-val');
+  if (!bar||!val) return;
+  const color = pct>=80 ? '#16A34A' : pct>=60 ? '#D97706' : '#DC2626';
+  bar.style.width = Math.min(pct,100)+'%'; bar.style.background = color;
+  val.textContent = pct+'%'; val.style.color = color;
+}
+
+function updatePeriodBtn(cId, period, pct, jKey, isDay) {
+  const el = document.getElementById(cId); if (!el) return;
+  if (ST.deposit.judged[jKey]) {
+    el.innerHTML = '<div class="judge-done-badge">✓ 判定済み</div>';
+    return;
+  }
+  if (!isDay) { el.innerHTML = ''; return; }
+  const isAch = pct >= 80, pl = DL[period], amt = calcDepAmt(period);
+  if (isAch) {
+    el.innerHTML =
+      '<div class="judge-inline judge-inline-achieve" onclick="openDepJudge(\'' + period + '\',\'achieve\',\'' + jKey + '\')">' +
+        '<span style="font-size:22px;flex-shrink:0;">🎉</span>' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:13px;font-weight:500;color:#16A34A;">' + pl + '達成！' + pct + '%</div>' +
+          '<div style="font-size:11px;margin-top:2px;color:var(--text2);">タップして預け金' + fmt(amt) + 'を受け取る</div>' +
+        '</div>' +
+        '<span style="font-size:14px;color:var(--text2);">›</span>' +
+      '</div>';
+  } else {
+    el.innerHTML =
+      '<div class="judge-inline judge-inline-fail" onclick="openDepJudge(\'' + period + '\',\'fail\',\'' + jKey + '\')">' +
+        '<span style="font-size:22px;flex-shrink:0;">😢</span>' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:13px;font-weight:500;color:#DC2626;">' + pl + '未達…' + pct + '%</div>' +
+          '<div style="font-size:11px;margin-top:2px;color:var(--text2);">タップして預け金' + fmt(amt) + 'の処理をする</div>' +
+        '</div>' +
+        '<span style="font-size:14px;color:var(--text2);">›</span>' +
+      '</div>';
+  }
+}
+
+function calcDepAmt(period) {
+  const base=DB[period], streak=ST.deposit.streaks[period]||0;
+  if (streak>=3) return Math.round(base*2);
+  if (streak>=2) return Math.round(base*1.5);
+  return base;
+}
+function getRemCap() { return Math.max(0, MFC - (ST.deposit.monthlyForfeit[mkKey()]||0)); }
+
+function openDepJudge(period, result, jKey) {
+  const amount=calcDepAmt(period), remaining=getRemCap(), pl=DL[period];
+  dCtx = {period, result, amount, judgedKey: jKey||null};
+  modalSel = -1;
+  if (result === 'exception') {
+    document.getElementById('sh-emoji').textContent = '🙏';
+    document.getElementById('sh-title').textContent = '例外として記録';
+    document.getElementById('sh-sub').textContent   = '体調不良・緊急対応・災害事故のみ。連続未達カウントは変わりません。';
+    document.getElementById('sh-body').innerHTML =
+      '<div style="background:var(--bg2);border-radius:var(--r);padding:16px;margin-bottom:18px;text-align:center;">' +
+        '<div style="font-size:26px;font-weight:500;color:var(--text);">' + fmt(amount) + '</div>' +
+        '<div style="font-size:12px;color:var(--text2);margin-top:4px;">今回は没収・獲得ともなし</div>' +
+      '</div>';
+    const btn = document.getElementById('sh-btn');
+    btn.style.background = '#6B7280'; btn.textContent = '✅ 例外として記録する'; btn.onclick = confirmDep;
+  } else if (result === 'achieve') {
+    document.getElementById('sh-emoji').textContent = '💰';
+    document.getElementById('sh-title').textContent = pl + '達成！預け金を獲得';
+    document.getElementById('sh-sub').textContent   = fmt(amount) + 'を自分の報酬に使えます！';
+    document.getElementById('sh-body').innerHTML =
+      '<div style="background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:var(--r);padding:14px;margin-bottom:16px;text-align:center;">' +
+        '<div style="font-size:28px;font-weight:500;color:#78350F;">' + fmt(amount) + '</div>' +
+      '</div>' +
+      '<div class="usage-opts">' +
+        AU.map((u,i) =>
+          '<div class="usage-opt" onclick="selU(' + i + ')">' +
+            '<span class="uoi">' + AI[i] + '</span>' +
+            '<span class="uot">' + u + '</span>' +
+          '</div>'
+        ).join('') +
+      '</div>';
+    const btn = document.getElementById('sh-btn');
+    btn.style.background = '#D97706'; btn.textContent = '✅ これに使う！';
+    btn.onclick = function(){ if(modalSel<0) selU(0); confirmDep(); };
+  } else {
+    const af = Math.min(amount, remaining), capHit = remaining < amount;
+    dCtx.actualForfeit = af;
+    document.getElementById('sh-emoji').textContent = '😢';
+    document.getElementById('sh-title').textContent = pl + '未達…預け金を没収';
+    document.getElementById('sh-sub').textContent   = fmt(af) + 'は24時間以内に募金してください。';
+    document.getElementById('sh-body').innerHTML =
+      '<div style="background:#FEE2E2;border:1.5px solid #FCA5A5;border-radius:var(--r);padding:14px;margin-bottom:' + (capHit?'8px':'14px') + ';text-align:center;">' +
+        '<div style="font-size:28px;font-weight:500;color:#7F1D1D;">' + fmt(af) + '</div>' +
+        (capHit ? '<div style="font-size:11px;color:#991B1B;margin-top:4px;">月間上限により減額</div>' : '') +
+      '</div>' +
+      (capHit ? '<div class="cap-warn">⚠️ 今月の没収上限' + fmt(MFC) + 'に到達。</div>' : '') +
+      '<div class="usage-opts">' +
+        FU.map((u,i) =>
+          '<div class="usage-opt" onclick="selU(' + i + ')">' +
+            '<span class="uoi">' + FI[i] + '</span>' +
+            '<span class="uot">' + u + '</span>' +
+          '</div>'
+        ).join('') +
+      '</div>';
+    const btn = document.getElementById('sh-btn');
+    btn.style.background = '#DC2626'; btn.textContent = '😤 わかった、手放します';
+    btn.onclick = function(){ if(modalSel<0) selU(0); confirmDep(); };
+  }
+  document.getElementById('overlay').classList.add('show');
+}
+
+function selU(i) { modalSel=i; document.querySelectorAll('.usage-opt').forEach((el,ci)=>el.classList.toggle('selected',ci===i)); }
+
+function confirmDep() {
+  const {period,result,amount,actualForfeit,judgedKey} = dCtx;
+  const mk = mkKey();
+  if (judgedKey) ST.deposit.judged[judgedKey] = true;
+  if (result === 'achieve') {
+    ST.deposit.streaks[period] = 0;
+    const use = AU[modalSel] || AU[0];
+    ST.deposit.history.unshift({period,result:'achieve',amount,use,date:toStr(),note:use});
+  } else if (result === 'fail') {
+    ST.deposit.streaks[period] = (ST.deposit.streaks[period]||0) + 1;
+    const forfeit = actualForfeit || amount;
+    if (!ST.deposit.monthlyForfeit[mk]) ST.deposit.monthlyForfeit[mk] = 0;
+    ST.deposit.monthlyForfeit[mk] += forfeit;
+    const use = FU[modalSel] || FU[0];
+    ST.deposit.history.unshift({period,result:'fail',amount:forfeit,use,date:toStr(),note:use});
+  } else {
+    ST.deposit.history.unshift({period,result:'exception',amount:0,use:'例外',date:toStr(),note:'例外適用'});
+  }
+  if (ST.deposit.history.length > 60) ST.deposit.history.pop();
+  sv(); closeModal(); updateJudgeBanners();
+  if (document.getElementById('tab-deposit').classList.contains('active')) renderDeposit();
+}
+
+function openRewardModal(period, isReward) {
+  const list = RL[period][isReward ? 'reward' : 'penalty'], pl = DL[period];
+  document.getElementById('sh-emoji').textContent = isReward ? '🎉' : '💪';
+  document.getElementById('sh-title').textContent = isReward ? pl+'達成！おめでとう' : pl+'未達…罰ゲームです';
+  if (isReward) {
+    const picks = [...list].sort(()=>Math.random()-.5).slice(0,3);
+    modalSel = -1;
+    document.getElementById('sh-sub').textContent = '3つから好きなご褒美を選んで！';
+    document.getElementById('sh-body').innerHTML =
+      '<div class="reward-cards">' +
+        picks.map((item,i) =>
+          '<div class="reward-card" id="rc-' + i + '" onclick="selR(' + i + ')">' +
+            '<span class="rc-num">' + (i+1) + '</span>' +
+            '<span class="rc-text">' + item + '</span>' +
+          '</div>'
+        ).join('') +
+      '</div>';
+    const btn = document.getElementById('sh-btn');
+    btn.style.background = '#16A34A'; btn.textContent = '🎁 これに決定！';
+    btn.onclick = function(){ if(modalSel<0) selR(0); closeModal(); };
+  } else {
+    const picked = list[Math.floor(Math.random()*list.length)];
+    document.getElementById('sh-sub').textContent = '逃げられません。必ずやること！';
+    document.getElementById('sh-body').innerHTML =
+      '<div class="penalty-box">' +
+        '<div class="pb-label">今回の罰ゲーム</div>' +
+        '<div class="pb-text">' + picked + '</div>' +
+      '</div>';
+    const btn = document.getElementById('sh-btn');
+    btn.style.background = '#DC2626'; btn.textContent = '😤 わかった、やります';
+    btn.onclick = closeModal;
+  }
+  document.getElementById('overlay').classList.add('show');
+}
+function selR(i) { modalSel=i; document.querySelectorAll('.reward-card').forEach((c,ci)=>c.classList.toggle('selected',ci===i)); }
+function closeModal()   { document.getElementById('overlay').classList.remove('show'); }
+function overlayClick(e){ if(e.target===document.getElementById('overlay')) closeModal(); }
+
+function bannerHTML(period) {
+  const icons = {day:'📅',week:'🏆',month:'🏅'}, pl = DL[period];
+  return (
+    '<div class="banner-row">' +
+      '<div class="ach-banner" style="background:#F0FDF4;border-color:#86EFAC;" onclick="openRewardModal(\'' + period + '\',true)">' +
+        '<span style="font-size:18px;">' + icons[period] + '</span>' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:12px;font-weight:500;color:#16A34A;">' + pl + '達成</div>' +
+          '<div style="font-size:10px;color:var(--text2);margin-top:1px;">報酬を選ぶ</div>' +
+        '</div>' +
+        '<span style="font-size:12px;color:var(--text2);">›</span>' +
+      '</div>' +
+      '<div class="ach-banner" style="background:#FEF2F2;border-color:#FCA5A5;" onclick="openRewardModal(\'' + period + '\',false)">' +
+        '<span style="font-size:18px;">💀</span>' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:12px;font-weight:500;color:#DC2626;">' + pl + '未達</div>' +
+          '<div style="font-size:10px;color:var(--text2);margin-top:1px;">罰ゲームを引く</div>' +
+        '</div>' +
+        '<span style="font-size:12px;color:var(--text2);">›</span>' +
+      '</div>' +
+    '</div>'
+  );
+}
+
+function updateRow(ki, wk) {
+  const kpi = ST.kpis[ki]; let total=0; for(let d=0;d<5;d++) total+=getData(wk,ki,d);
+  const w=wgt(ki), diff=total-w;
+  const e1=document.getElementById('sum-'+ki), e2=document.getElementById('tdiff-'+ki);
+  if(e1){ e1.textContent=total; e1.style.color=KC[kpi.color]; }
+  if(e2){ e2.textContent=diff>0?'+'+diff:diff; e2.className='cell-diff-total '+(diff>0?'diff-pos':diff<0?'diff-neg':'diff-zero'); }
+  for(let d=0;d<5;d++){
+    const v=getData(wk,ki,d)-kpi.goals[d], el=document.getElementById('diff-'+ki+'-'+d);
+    if(el){ el.textContent=v>0?'+'+v:v; el.className='cell-diff '+(v>0?'diff-pos':v<0?'diff-neg':'diff-zero'); }
+  }
+  updWC(ki, wk);
+}
+
+function renderWeekly() {
+  document.getElementById('week-label').textContent = fmtWk(curWk);
+  const container = document.getElementById('kpi-cards'); container.innerHTML = '';
+
+  const sumDiv = document.createElement('div'); sumDiv.className = 'card';
+  sumDiv.innerHTML =
+    '<div class="sec-title" style="margin-bottom:8px;">達成率 — 全KPI合計</div>' +
+    '<div class="pct-row"><span class="pct-label">今日</span><div class="pct-bar-wrap"><div class="pct-bar" id="b-day-bar" style="width:0%"></div></div><span class="pct-val" id="b-day-val">0%</span></div>' +
+    '<div id="judge-day"></div>' +
+    '<div class="pct-row" style="margin-top:10px;"><span class="pct-label">今週</span><div class="pct-bar-wrap"><div class="pct-bar" id="b-week-bar" style="width:0%"></div></div><span class="pct-val" id="b-week-val">0%</span></div>' +
+    '<div id="judge-week"></div>' +
+    '<div class="pct-row" style="margin-top:10px;"><span class="pct-label">今月</span><div class="pct-bar-wrap"><div class="pct-bar" id="b-month-bar" style="width:0%"></div></div><span class="pct-val" id="b-month-val">0%</span></div>' +
+    '<div id="judge-month"></div>' +
+    '<div style="font-size:10px;color:var(--text2);margin-top:10px;">実績を入力すると達成・未達の判定ボタンが自動で出ます。判定タイミング：日次＝毎日 / 週次＝週末 / 月次＝月末</div>';
+  container.appendChild(sumDiv);
+  updateJudgeBanners();
+
+  const banDiv = document.createElement('div');
+  banDiv.innerHTML = bannerHTML('day') + bannerHTML('week');
+  container.appendChild(banDiv);
+
+  ST.kpis.forEach((kpi, ki) => {
+    const color = KC[kpi.color]; let wa=0; for(let d=0;d<5;d++) wa+=getData(curWk,ki,d);
+    const w=wgt(ki), wd=wa-w, dc=wd>0?'diff-pos':wd<0?'diff-neg':'diff-zero';
+    const card = document.createElement('div'); card.className = 'card';
+
+    let tableRows = '';
+    tableRows += '<tr><td class="cell-label">目標</td>';
+    DAYS.forEach((_,di) => { tableRows += '<td class="cell-goal">' + kpi.goals[di] + '</td>'; });
+    tableRows += '<td class="cell-goal-total">' + w + '</td></tr>';
+
+    tableRows += '<tr><td class="cell-label">実績</td>';
+    DAYS.forEach((_,di) => {
+      tableRows +=
+        '<td class="cell-actual"><div class="tap-cell">' +
+          '<button class="btn-plus" style="background:' + color + '" onclick="tap(' + ki + ',' + di + ',1)">+</button>' +
+          '<span class="tap-display" id="disp-' + ki + '-' + di + '">' + getData(curWk,ki,di) + '</span>' +
+          '<button class="btn-minus" onclick="tap(' + ki + ',' + di + ',-1)">−</button>' +
+        '</div></td>';
+    });
+    tableRows += '<td class="cell-actual-total" id="sum-' + ki + '" style="color:' + color + '">' + wa + '</td></tr>';
+
+    tableRows += '<tr><td class="cell-label">貸借</td>';
+    DAYS.forEach((_,di) => {
+      const v=getData(curWk,ki,di)-kpi.goals[di], c=v>0?'diff-pos':v<0?'diff-neg':'diff-zero';
+      tableRows += '<td class="cell-diff ' + c + '" id="diff-' + ki + '-' + di + '">' + (v>0?'+'+v:v) + '</td>';
+    });
+    tableRows += '<td class="cell-diff-total ' + dc + '" id="tdiff-' + ki + '">' + (wd>0?'+'+wd:wd) + '</td></tr>';
+
+    card.innerHTML =
+      '<div class="kpi-header">' +
+        '<span class="kpi-dot" style="background:' + color + '"></span>' +
+        '<span class="kpi-title">' + kpi.name + '</span>' +
+        '<span class="kpi-badge">週目標 ' + w + '件</span>' +
+      '</div>' +
+      '<table class="kpi-table">' +
+        '<thead><tr><th class="th-label"></th>' + DAYS.map(d=>'<th class="th-day">'+d+'</th>').join('') + '<th class="th-total">計</th></tr></thead>' +
+        '<tbody>' + tableRows + '</tbody>' +
+      '</table>' +
+      '<div class="chart-wrap"><canvas id="chart-' + ki + '" role="img" aria-label="' + kpi.name + 'の累計推移"></canvas></div>' +
+      '<div class="chart-legend">' +
+        '<span class="legend-item"><span class="legend-line dashed"></span>目標累計</span>' +
+        '<span class="legend-item"><span class="legend-line" style="background:' + color + '"></span>実績累計</span>' +
+      '</div>';
+    container.appendChild(card);
+    setTimeout(() => drawWC(ki, color), 0);
+  });
+}
+
+function buildCum(ki, wk) {
+  const kpi=ST.kpis[ki], cg=[], ca=[]; let g=0,a=0;
+  for(let i=0;i<5;i++){ g+=kpi.goals[i]; a+=getData(wk,ki,i); cg.push(g); ca.push(a); }
+  return {cg, ca};
+}
+function drawWC(ki, color) {
+  const c=document.getElementById('chart-'+ki); if(!c) return;
+  if(charts['w'+ki]) charts['w'+ki].destroy();
+  const {cg,ca} = buildCum(ki, curWk);
+  charts['w'+ki] = new Chart(c, {
+    type:'line',
+    data:{labels:DAYS, datasets:[
+      {label:'目標',data:cg,borderColor:'#BBBBBB',borderWidth:2,borderDash:[6,4],pointRadius:4,pointBackgroundColor:'#fff',pointBorderColor:'#BBBBBB',pointBorderWidth:2,tension:0,fill:false},
+      {label:'実績',data:ca,borderColor:color,borderWidth:2.5,pointRadius:5,pointBackgroundColor:color,pointBorderColor:'#fff',pointBorderWidth:2,tension:0,fill:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+'累計: '+ctx.parsed.y+'件'}}},
+      scales:{y:{beginAtZero:true,grid:{color:'rgba(128,128,128,.12)'},ticks:{font:{size:11},color:'#999',maxTicksLimit:5}},x:{grid:{display:false},ticks:{font:{size:11},color:'#999'}}}}
+  });
+}
+function updWC(ki, wk) {
+  if(!charts['w'+ki]) return;
+  const {cg,ca} = buildCum(ki, wk);
+  charts['w'+ki].data.datasets[0].data = cg; charts['w'+ki].data.datasets[1].data = ca; charts['w'+ki].update('none');
+}
+
+function getMonthWeeks(y, m) {
+  const w=[], d=new Date(y,m,1);
+  while(d.getMonth()===m){ const k=getWeekKey(d); if(!w.includes(k)) w.push(k); d.setDate(d.getDate()+7); }
+  return w;
+}
+
+function renderMonthly() {
+  document.getElementById('month-label').textContent = vYear+'年 '+ML[vMonth];
+  const container=document.getElementById('monthly-summary'); container.innerHTML='';
+  const banDiv=document.createElement('div'); banDiv.innerHTML=bannerHTML('month'); container.appendChild(banDiv);
+  const weeks=getMonthWeeks(vYear,vMonth);
+  ST.kpis.forEach((kpi,ki) => {
+    const color=KC[kpi.color];
+    const wd=weeks.map(wk=>{ let a=0; for(let d=0;d<5;d++) a+=getData(wk,ki,d); return {a,g:wgt(ki)}; });
+    const ta=wd.reduce((s,w)=>s+w.a,0), tg=wgt(ki)*weeks.length, pct=tg>0?Math.round(ta/tg*100):0, diff=ta-tg;
+    const pc=pct>=80?'#16A34A':'#DC2626';
+    const card=document.createElement('div'); card.className='card';
+    card.innerHTML =
+      '<div class="kpi-header">' +
+        '<span class="kpi-dot" style="background:'+color+'"></span>' +
+        '<span class="kpi-title">'+kpi.name+'</span>' +
+        '<span style="margin-left:auto;font-size:12px;font-weight:500;color:'+pc+';">'+pct+'% '+(pct>=80?'✓':'✗')+'</span>' +
+      '</div>' +
+      '<div class="summary-row">' +
+        '<div class="stat-card"><div class="stat-label">実績</div><div class="stat-val" style="color:'+color+'">'+ta+'</div></div>' +
+        '<div class="stat-card"><div class="stat-label">目標</div><div class="stat-val">'+tg+'</div></div>' +
+        '<div class="stat-card"><div class="stat-label">達成率</div><div class="stat-val" style="color:'+pc+'">'+pct+'%</div></div>' +
+      '</div>' +
+      '<div class="chart-wrap" style="height:160px;"><canvas id="mchart-'+ki+'" role="img"></canvas></div>' +
+      '<div class="chart-legend">' +
+        '<span class="legend-item"><span class="legend-line dashed"></span>目標累計</span>' +
+        '<span class="legend-item"><span class="legend-line" style="background:'+color+'"></span>実績累計</span>' +
+      '</div>';
+    container.appendChild(card);
+    setTimeout(() => {
+      const c=document.getElementById('mchart-'+ki); if(!c) return;
+      if(charts['m'+ki]) charts['m'+ki].destroy();
+      let cg=0,ca=0; const cumG=[],cumA=[]; wd.forEach(w=>{ cg+=w.g; ca+=w.a; cumG.push(cg); cumA.push(ca); });
+      charts['m'+ki] = new Chart(c, {
+        type:'line', data:{labels:weeks.map((_,i)=>'第'+(i+1)+'週'), datasets:[
+          {label:'目標',data:cumG,borderColor:'#BBBBBB',borderWidth:2,borderDash:[6,4],pointRadius:4,pointBackgroundColor:'#fff',pointBorderColor:'#BBBBBB',pointBorderWidth:2,tension:0,fill:false},
+          {label:'実績',data:cumA,borderColor:color,borderWidth:2.5,pointRadius:5,pointBackgroundColor:color,pointBorderColor:'#fff',pointBorderWidth:2,tension:0,fill:false}
+        ]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+          scales:{y:{beginAtZero:true,grid:{color:'rgba(128,128,128,.12)'},ticks:{font:{size:10},color:'#999',maxTicksLimit:5}},x:{grid:{display:false},ticks:{font:{size:11},color:'#999'}}}}
+      });
+    }, 0);
+  });
+  const nk=vYear+'-'+String(vMonth+1).padStart(2,'0');
+  document.getElementById('month-note').value=ST.notes[nk]||''; document.getElementById('month-note').dataset.key=nk;
+}
+function saveNote() {
+  const k=document.getElementById('month-note').dataset.key;
+  ST.notes[k]=document.getElementById('month-note').value; sv();
+  const btn=document.querySelector('.save-btn'); btn.textContent='✓ 保存しました'; setTimeout(()=>btn.textContent='保存',1500);
+}
+
+function renderYearly() {
+  document.getElementById('year-label').textContent = vYear+'年';
+  const container=document.getElementById('yearly-content'); container.innerHTML='';
+  ST.kpis.forEach((kpi,ki) => {
+    const color=KC[kpi.color];
+    const md=Array.from({length:12},(_,mi)=>{
+      const w=getMonthWeeks(vYear,mi); let a=0,g=0;
+      w.forEach(wk=>{ for(let d=0;d<5;d++) a+=getData(wk,ki,d); g+=wgt(ki); }); return {a,g};
+    });
+    const ta=md.reduce((s,m)=>s+m.a,0), tg=md.reduce((s,m)=>s+m.g,0), pct=tg>0?Math.round(ta/tg*100):0;
+    const card=document.createElement('div'); card.className='card';
+    card.innerHTML =
+      '<div class="kpi-header">' +
+        '<span class="kpi-dot" style="background:'+color+'"></span>' +
+        '<span class="kpi-title">'+kpi.name+'</span>' +
+        '<span class="kpi-badge" style="color:'+color+';font-weight:500">'+pct+'% ('+ta+'/'+tg+'件)</span>' +
+      '</div>' +
+      '<div class="chart-wrap" style="height:180px;"><canvas id="ychart-'+ki+'" role="img"></canvas></div>' +
+      '<div class="chart-legend">' +
+        '<span class="legend-item"><span class="legend-line dashed"></span>目標累計</span>' +
+        '<span class="legend-item"><span class="legend-line" style="background:'+color+'"></span>実績累計</span>' +
+      '</div>';
+    container.appendChild(card);
+    setTimeout(() => {
+      const c=document.getElementById('ychart-'+ki); if(!c) return;
+      if(charts['y'+ki]) charts['y'+ki].destroy();
+      let cg=0,ca=0; const cumG=[],cumA=[]; md.forEach(m=>{ cg+=m.g; ca+=m.a; cumG.push(cg); cumA.push(ca); });
+      charts['y'+ki] = new Chart(c, {
+        type:'line', data:{labels:ML.map(m=>m.replace('月','')), datasets:[
+          {label:'目標',data:cumG,borderColor:'#BBBBBB',borderWidth:2,borderDash:[6,4],pointRadius:3,pointBackgroundColor:'#fff',pointBorderColor:'#BBBBBB',pointBorderWidth:2,tension:0,fill:false},
+          {label:'実績',data:cumA,borderColor:color,borderWidth:2.5,pointRadius:4,pointBackgroundColor:color,pointBorderColor:'#fff',pointBorderWidth:2,tension:0,fill:false}
+        ]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+          scales:{y:{beginAtZero:true,grid:{color:'rgba(128,128,128,.12)'},ticks:{font:{size:10},color:'#999',maxTicksLimit:5}},x:{grid:{display:false},ticks:{font:{size:9},color:'#999'}}}}
+      });
+    }, 0);
+  });
+}
+
+function renderDeposit() {
+  const h=ST.deposit.history;
+  const tA=h.filter(x=>x.result==='achieve').reduce((s,x)=>s+x.amount,0);
+  const tF=h.filter(x=>x.result==='fail').reduce((s,x)=>s+x.amount,0);
+  const mk=mkKey(), tmf=ST.deposit.monthlyForfeit[mk]||0, rem=getRemCap();
+  const RULES = [
+    '毎朝500円・毎週月曜3,500円・毎月1日25,000円を封筒へ',
+    '達成基準は全KPI平均80%以上。79%以下は問答無用で未達',
+    '達成した預け金は自分の報酬予算として使える',
+    '未達の預け金は24時間以内に募金する',
+    '惜しかった・忙しかった・疲れていた、は未達扱い',
+    '例外は体調不良・仕事/家族の緊急対応・災害事故のみ',
+    '月間の没収上限は' + fmt(MFC),
+    '2回連続未達で×1.5倍、3回以上で×2倍'
+  ];
+  let html =
+    '<div class="dep-hero">' +
+      '<div style="font-size:11px;font-weight:500;color:#92400E;letter-spacing:.05em;margin-bottom:10px;">💰 久保田式・預け金制度</div>' +
+      '<div class="d-grid">' +
+        '<div class="d-stat"><div class="d-sl">達成で獲得（累計）</div><div class="d-sv" style="color:#16A34A;">' + fmt(tA) + '</div></div>' +
+        '<div class="d-stat"><div class="d-sl">未達で没収（累計）</div><div class="d-sv" style="color:#DC2626;">' + fmt(tF) + '</div></div>' +
+        '<div class="d-stat"><div class="d-sl">今月の没収額</div><div class="d-sv" style="color:' + (tmf>=MFC?'#DC2626':'#B45309') + ';">' + fmt(tmf) + '</div></div>' +
+        '<div class="d-stat"><div class="d-sl">今月の没収残枠</div><div class="d-sv" style="color:#0F6E56;">' + fmt(rem) + '</div></div>' +
+      '</div>' +
+    '</div>';
+
+  ['day','week','month'].forEach(period => {
+    const base=DB[period], streak=ST.deposit.streaks[period]||0, cur=calcDepAmt(period), pl=DL[period];
+    const timing = {day:'毎日就寝前', week:'日曜夜', month:'月末夜'}[period];
+    let sk = '';
+    if      (streak===0) sk = '<span class="sk-badge sk-ok">連続未達なし（基本額）</span>';
+    else if (streak===1) sk = '<span class="sk-badge sk-w">1回連続未達（次回×1.5倍）</span>';
+    else if (streak===2) sk = '<span class="sk-badge sk-w">2回連続未達 → 現在×1.5倍</span>';
+    else                 sk = '<span class="sk-badge sk-d">' + streak + '回連続未達 → 現在×2倍</span>';
+    const ac = cur>base ? '#DC2626' : '#B45309';
+    html +=
+      '<div class="p-card">' +
+        '<div class="p-head">' +
+          '<span class="p-label">' + pl + '預け金</span>' +
+          '<span style="font-size:12px;font-weight:500;padding:3px 10px;border-radius:20px;background:#FEF3C7;color:' + ac + ';">' + fmt(cur) + (cur>base?' (基本'+fmt(base)+')':'') + '</span>' +
+        '</div>' +
+        sk +
+        '<div style="font-size:11px;color:var(--text2);margin-bottom:8px;">判定タイミング：' + timing + '　達成基準：全KPI平均80%以上</div>' +
+        '<div class="j-row">' +
+          '<button class="j-btn j-ach" onclick="openDepJudge(\'' + period + '\',\'achieve\',null)">🎉 達成（手動）</button>' +
+          '<button class="j-btn j-fail" onclick="openDepJudge(\'' + period + '\',\'fail\',null)">😢 未達（手動）</button>' +
+        '</div>' +
+        '<div class="j-row">' +
+          '<button class="j-btn j-ex" style="font-size:11px;" onclick="openDepJudge(\'' + period + '\',\'exception\',null)">🙏 例外適用（体調不良・緊急・災害のみ）</button>' +
+        '</div>' +
+      '</div>';
+  });
+
+  html +=
+    '<div class="card" style="margin-top:4px;">' +
+      '<div class="sec-title">久保田式ルール</div>' +
+      RULES.map((r,i) => '<div class="rule-item"><span class="rn">'+(i+1)+'</span><span>'+r+'</span></div>').join('') +
+    '</div>';
+
+  html += '<div class="sec-title" style="margin-top:4px;">判定履歴</div>';
+  if (h.length === 0) {
+    html += '<div style="text-align:center;padding:20px 0;font-size:13px;color:var(--text2);">まだ記録がありません</div>';
+  } else {
+    html += h.slice(0,30).map(x => {
+      const bc = x.result==='achieve'?'ba':x.result==='fail'?'bf':'be';
+      const bl = x.result==='achieve'?'達成':x.result==='fail'?'未達':'例外';
+      const ac = x.result==='achieve'?'#16A34A':x.result==='fail'?'#DC2626':'var(--text2)';
+      const as = x.result==='exception'?'−':x.result==='achieve'?'+'+fmt(x.amount):'-'+fmt(x.amount);
+      return (
+        '<div class="h-item">' +
+          '<span class="hbadge '+bc+'">'+bl+'</span>' +
+          '<div style="flex:1;">' +
+            '<div style="font-size:13px;color:var(--text);">'+DL[x.period]+'・'+x.note+'</div>' +
+            '<div style="font-size:11px;color:var(--text2);margin-top:2px;">'+x.date+'</div>' +
+          '</div>' +
+          '<span style="font-size:14px;font-weight:500;color:'+ac+';">'+as+'</span>' +
+        '</div>'
+      );
+    }).join('');
+  }
+  document.getElementById('deposit-content').innerHTML = html;
+}
+
+function renderSettings() {
+  document.getElementById('settings-content').innerHTML = ST.kpis.map((kpi,ki) => {
+    const color = KC[kpi.color];
+    let goalCells = '';
+    DAYS.forEach((_,di) => {
+      goalCells +=
+        '<td style="padding:2px 3px;">' +
+          '<input type="number" class="goal-input" min="0" value="' + kpi.goals[di] + '" ' +
+            'style="border-top:2.5px solid ' + color + ';" ' +
+            'onchange="ST.kpis[' + ki + '].goals[' + di + ']=Math.max(0,Number(this.value));sv();updWS(' + ki + ')">' +
+        '</td>';
+    });
+    return (
+      '<div class="card" style="margin-bottom:12px;">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">' +
+          '<span class="kpi-dot" style="background:' + color + '"></span>' +
+          '<span style="font-size:13px;font-weight:500;color:var(--text);">KPI ' + (ki+1) + '</span>' +
+        '</div>' +
+        '<div class="s-row" style="margin-bottom:12px;">' +
+          '<label>名前</label>' +
+          '<input type="text" class="kpi-name-input" value="' + kpi.name + '" onchange="ST.kpis[' + ki + '].name=this.value;sv()">' +
+        '</div>' +
+        '<div class="s-row" style="margin-bottom:12px;">' +
+          '<label>色</label>' +
+          '<div class="color-pick">' +
+            KC.map((c,ci) =>
+              '<div class="color-opt ' + (kpi.color===ci?'selected':'') + '" style="background:' + c + '" ' +
+                'onclick="ST.kpis[' + ki + '].color=' + ci + ';sv();renderSettings()"></div>'
+            ).join('') +
+          '</div>' +
+        '</div>' +
+        '<div class="sec-title" style="margin-bottom:6px;">曜日別の目標件数</div>' +
+        '<table style="width:100%;border-collapse:separate;border-spacing:0 4px;">' +
+          '<thead><tr>' +
+            DAYS.map(d => '<th style="text-align:center;font-size:12px;color:var(--text2);padding-bottom:6px;">' + d + '</th>').join('') +
+            '<th style="text-align:center;font-size:11px;color:var(--text2);padding-bottom:6px;">週計</th>' +
+          '</tr></thead>' +
+          '<tbody><tr>' +
+            goalCells +
+            '<td style="text-align:center;font-size:13px;font-weight:500;color:' + color + ';padding:2px 3px;" id="wsum-' + ki + '">' + wgt(ki) + '</td>' +
+          '</tr></tbody>' +
+        '</table>' +
+      '</div>'
+    );
+  }).join('');
+}
+function updWS(ki) { const el=document.getElementById('wsum-'+ki); if(el) el.textContent=wgt(ki); }
+
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['weekly','monthly','yearly','deposit','settings'][i]===name));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if (name==='weekly')   renderWeekly();
+  if (name==='monthly')  renderMonthly();
+  if (name==='yearly')   renderYearly();
+  if (name==='deposit')  renderDeposit();
+  if (name==='settings') renderSettings();
+}
+
+renderWeekly();
+</script>
+</body>
+</html>
