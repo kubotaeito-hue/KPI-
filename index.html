@@ -141,6 +141,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .rule-item:last-child{border-bottom:none;}
 .rn{color:var(--text2);flex-shrink:0;width:20px;}
 .cap-warn{background:#FEF3C7;border:0.5px solid #F59E0B;border-radius:var(--rm);padding:8px 12px;font-size:12px;color:#92400E;margin-bottom:10px;}
+.th-today{background:#EFF6FF;color:var(--c-blue)!important;border-radius:4px;}
+.cell-today{background:rgba(37,99,235,.07);}
+.add-kpi-btn{width:100%;padding:11px;background:none;color:var(--c-blue);border:1px dashed var(--c-blue);border-radius:var(--rm);font-size:13px;font-weight:500;cursor:pointer;margin-top:4px;margin-bottom:12px;-webkit-tap-highlight-color:transparent;}
+.add-kpi-btn:active{opacity:.7;}
+.del-kpi-btn{padding:4px 10px;background:#FEE2E2;color:#DC2626;border:none;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.exp-card{background:var(--bg2);border-radius:var(--r);padding:14px;margin-bottom:12px;}
+.exp-btn{flex:1;padding:11px 6px;border-radius:var(--rm);font-size:13px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.exp-btn:active{opacity:.8;}
 </style>
 </head>
 <body>
@@ -202,7 +210,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <script>
 const DAYS = ['月','火','水','木','金'];
 const ML = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-const KC = ['#2563EB','#0F6E56','#D85A30'];
+const KC = ['#2563EB','#0F6E56','#D85A30','#7C3AED','#DB2777','#0891B2','#65A30D'];
 const DB = {day:500, week:3500, month:25000};
 const DL = {day:'日次', week:'週次', month:'月次'};
 const MFC = 25000;
@@ -264,6 +272,7 @@ function fmtWk(k) {
 function changeWeek(d)  { const dt=new Date(curWk); dt.setDate(dt.getDate()+d*7); curWk=getWeekKey(dt); renderWeekly(); }
 function changeMonth(d) { vMonth+=d; if(vMonth<0){vMonth=11;vYear--;} if(vMonth>11){vMonth=0;vYear++;} renderMonthly(); }
 function changeYear(d)  { vYear+=d; renderYearly(); }
+function getTodayIndex() { const dow=new Date().getDay(); return (dow===0||dow===6)?-1:dow-1; }
 
 function getData(wk,ki,di) { return ST.data[wk]?.[ki]?.[di] ?? 0; }
 function setData(wk,ki,di,val) {
@@ -533,20 +542,24 @@ function renderWeekly() {
   banDiv.innerHTML = bannerHTML('day') + bannerHTML('week');
   container.appendChild(banDiv);
 
+  const isCurrentWeek = curWk === wkToday();
+  const todayIdx = getTodayIndex();
+
   ST.kpis.forEach((kpi, ki) => {
     const color = KC[kpi.color]; let wa=0; for(let d=0;d<5;d++) wa+=getData(curWk,ki,d);
     const w=wgt(ki), wd=wa-w, dc=wd>0?'diff-pos':wd<0?'diff-neg':'diff-zero';
     const card = document.createElement('div'); card.className = 'card';
+    const tc = di => (isCurrentWeek && di===todayIdx) ? ' cell-today' : '';
 
     let tableRows = '';
     tableRows += '<tr><td class="cell-label">目標</td>';
-    DAYS.forEach((_,di) => { tableRows += '<td class="cell-goal">' + kpi.goals[di] + '</td>'; });
+    DAYS.forEach((_,di) => { tableRows += '<td class="cell-goal' + tc(di) + '">' + kpi.goals[di] + '</td>'; });
     tableRows += '<td class="cell-goal-total">' + w + '</td></tr>';
 
     tableRows += '<tr><td class="cell-label">実績</td>';
     DAYS.forEach((_,di) => {
       tableRows +=
-        '<td class="cell-actual"><div class="tap-cell">' +
+        '<td class="cell-actual' + tc(di) + '"><div class="tap-cell">' +
           '<button class="btn-plus" style="background:' + color + '" onclick="tap(' + ki + ',' + di + ',1)">+</button>' +
           '<span class="tap-display" id="disp-' + ki + '-' + di + '">' + getData(curWk,ki,di) + '</span>' +
           '<button class="btn-minus" onclick="tap(' + ki + ',' + di + ',-1)">−</button>' +
@@ -557,7 +570,7 @@ function renderWeekly() {
     tableRows += '<tr><td class="cell-label">貸借</td>';
     DAYS.forEach((_,di) => {
       const v=getData(curWk,ki,di)-kpi.goals[di], c=v>0?'diff-pos':v<0?'diff-neg':'diff-zero';
-      tableRows += '<td class="cell-diff ' + c + '" id="diff-' + ki + '-' + di + '">' + (v>0?'+'+v:v) + '</td>';
+      tableRows += '<td class="cell-diff ' + c + tc(di) + '" id="diff-' + ki + '-' + di + '">' + (v>0?'+'+v:v) + '</td>';
     });
     tableRows += '<td class="cell-diff-total ' + dc + '" id="tdiff-' + ki + '">' + (wd>0?'+'+wd:wd) + '</td></tr>';
 
@@ -568,7 +581,7 @@ function renderWeekly() {
         '<span class="kpi-badge">週目標 ' + w + '件</span>' +
       '</div>' +
       '<table class="kpi-table">' +
-        '<thead><tr><th class="th-label"></th>' + DAYS.map(d=>'<th class="th-day">'+d+'</th>').join('') + '<th class="th-total">計</th></tr></thead>' +
+        '<thead><tr><th class="th-label"></th>' + DAYS.map((d,di)=>'<th class="th-day'+(isCurrentWeek&&di===todayIdx?' th-today':'')+'">'+(isCurrentWeek&&di===todayIdx?'<b>'+d+'</b>':d)+'</th>').join('') + '<th class="th-total">計</th></tr></thead>' +
         '<tbody>' + tableRows + '</tbody>' +
       '</table>' +
       '<div class="chart-wrap"><canvas id="chart-' + ki + '" role="img" aria-label="' + kpi.name + 'の累計推移"></canvas></div>' +
@@ -787,7 +800,7 @@ function renderDeposit() {
 }
 
 function renderSettings() {
-  document.getElementById('settings-content').innerHTML = ST.kpis.map((kpi,ki) => {
+  const kpiCards = ST.kpis.map((kpi,ki) => {
     const color = KC[kpi.color];
     let goalCells = '';
     DAYS.forEach((_,di) => {
@@ -802,7 +815,8 @@ function renderSettings() {
       '<div class="card" style="margin-bottom:12px;">' +
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">' +
           '<span class="kpi-dot" style="background:' + color + '"></span>' +
-          '<span style="font-size:13px;font-weight:500;color:var(--text);">KPI ' + (ki+1) + '</span>' +
+          '<span style="font-size:13px;font-weight:500;color:var(--text);flex:1;">KPI ' + (ki+1) + ' — ' + kpi.name + '</span>' +
+          '<button class="del-kpi-btn" onclick="deleteKpi(' + ki + ')">削除</button>' +
         '</div>' +
         '<div class="s-row" style="margin-bottom:12px;">' +
           '<label>名前</label>' +
@@ -810,7 +824,7 @@ function renderSettings() {
         '</div>' +
         '<div class="s-row" style="margin-bottom:12px;">' +
           '<label>色</label>' +
-          '<div class="color-pick">' +
+          '<div class="color-pick" style="flex-wrap:wrap;">' +
             KC.map((c,ci) =>
               '<div class="color-opt ' + (kpi.color===ci?'selected':'') + '" style="background:' + c + '" ' +
                 'onclick="ST.kpis[' + ki + '].color=' + ci + ';sv();renderSettings()"></div>'
@@ -831,8 +845,65 @@ function renderSettings() {
       '</div>'
     );
   }).join('');
+
+  const addBtn = ST.kpis.length < 7
+    ? '<button class="add-kpi-btn" onclick="addKpi()">＋ KPIを追加（最大7件）</button>'
+    : '<div style="text-align:center;font-size:12px;color:var(--text2);margin-bottom:12px;">KPIは最大7件まで</div>';
+
+  const expCard =
+    '<div class="exp-card">' +
+      '<div class="sec-title" style="margin-bottom:10px;">データのバックアップ</div>' +
+      '<div style="display:flex;gap:8px;">' +
+        '<button class="exp-btn" style="background:var(--c-blue);color:#fff;border:none;" onclick="exportData()">📤 エクスポート</button>' +
+        '<button class="exp-btn" style="background:var(--bg);border:0.5px solid var(--border);color:var(--text);" onclick="importData()">📥 インポート</button>' +
+      '</div>' +
+      '<div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.5;">エクスポート：全データをJSONで保存<br>インポート：バックアップから復元（現データは上書き）</div>' +
+    '</div>';
+
+  document.getElementById('settings-content').innerHTML = kpiCards + addBtn + expCard;
 }
 function updWS(ki) { const el=document.getElementById('wsum-'+ki); if(el) el.textContent=wgt(ki); }
+
+function addKpi() {
+  if (ST.kpis.length >= 7) { alert('KPIは最大7件まで設定できます'); return; }
+  ST.kpis.push({name:'KPI '+(ST.kpis.length+1), goals:[3,3,3,3,3], color:ST.kpis.length%KC.length});
+  sv(); renderSettings();
+}
+function deleteKpi(ki) {
+  if (ST.kpis.length <= 1) { alert('KPIは最低1件必要です'); return; }
+  if (!confirm('"'+ST.kpis[ki].name+'"を削除しますか？\nこのKPIの入力データもすべて削除されます。')) return;
+  ST.kpis.splice(ki, 1);
+  Object.keys(ST.data).forEach(wk => {
+    const wd=ST.data[wk], nwd={};
+    Object.keys(wd).forEach(k=>{ const n=Number(k); if(n<ki) nwd[n]=wd[n]; else if(n>ki) nwd[n-1]=wd[n]; });
+    ST.data[wk]=nwd;
+  });
+  sv(); renderSettings();
+}
+function exportData() {
+  const blob=new Blob([JSON.stringify(ST,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url;
+  a.download='kpi_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+function importData() {
+  const input=document.createElement('input'); input.type='file'; input.accept='.json';
+  input.onchange=e=>{
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try {
+        const d=JSON.parse(ev.target.result);
+        if(d.kpis&&Array.isArray(d.kpis)&&d.data){
+          ST.kpis=d.kpis; ST.data=d.data; ST.notes=d.notes||{}; ST.deposit=d.deposit||ST.deposit;
+          sv(); showTab('weekly'); alert('✅ インポート完了！');
+        } else alert('無効なバックアップファイルです');
+      } catch(err){ alert('読み込みエラー: '+err.message); }
+    };
+    reader.readAsText(e.target.files[0]);
+  };
+  input.click();
+}
 
 function showTab(name) {
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['weekly','monthly','yearly','deposit','settings'][i]===name));
