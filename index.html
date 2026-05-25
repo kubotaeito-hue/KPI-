@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>KPI管理＋久保田式預け金</title>
+<title>有言実金～鬼KPI管理～</title>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -153,7 +153,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </head>
 <body>
 <div class="app">
-  <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">KPI管理＋久保田式預け金</h1>
+  <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">有言実金～鬼KPI管理～</h1>
   <div class="tab-bar">
     <button class="tab active" onclick="showTab('weekly')">📅<br>週次</button>
     <button class="tab" onclick="showTab('monthly')">📊<br>月次</button>
@@ -246,9 +246,12 @@ let ST = JSON.parse(localStorage.getItem('kpi_v11') || 'null') || {
 ST.kpis.forEach(k => {
   if (typeof k.goal === 'number' && !k.goals) { k.goals = [k.goal,k.goal,k.goal,k.goal,k.goal]; delete k.goal; }
   if (!k.goals) k.goals = [5,5,5,5,5];
+  if (k.indicator === undefined) k.indicator = '';
 });
 if (!ST.deposit) ST.deposit = {streaks:{day:0,week:0,month:0}, monthlyForfeit:{}, history:[], judged:{}};
 if (!ST.deposit.judged) ST.deposit.judged = {};
+if (!ST.rewards) ST.rewards = JSON.parse(JSON.stringify(RL));
+if (!ST.depositConfig) ST.depositConfig = {amounts:{day:500,week:3500,month:25000}, cap:25000};
 
 let curWk = getWeekKey(new Date());
 let vMonth = new Date().getMonth();
@@ -353,12 +356,12 @@ function updatePeriodBtn(cId, period, pct, jKey, isDay) {
 }
 
 function calcDepAmt(period) {
-  const base=DB[period], streak=ST.deposit.streaks[period]||0;
+  const base=ST.depositConfig.amounts[period], streak=ST.deposit.streaks[period]||0;
   if (streak>=3) return Math.round(base*2);
   if (streak>=2) return Math.round(base*1.5);
   return base;
 }
-function getRemCap() { return Math.max(0, MFC - (ST.deposit.monthlyForfeit[mkKey()]||0)); }
+function getRemCap() { return Math.max(0, ST.depositConfig.cap - (ST.deposit.monthlyForfeit[mkKey()]||0)); }
 
 function openDepJudge(period, result, jKey) {
   const amount=calcDepAmt(period), remaining=getRemCap(), pl=DL[period];
@@ -405,7 +408,7 @@ function openDepJudge(period, result, jKey) {
         '<div style="font-size:28px;font-weight:500;color:#7F1D1D;">' + fmt(af) + '</div>' +
         (capHit ? '<div style="font-size:11px;color:#991B1B;margin-top:4px;">月間上限により減額</div>' : '') +
       '</div>' +
-      (capHit ? '<div class="cap-warn">⚠️ 今月の没収上限' + fmt(MFC) + 'に到達。</div>' : '') +
+      (capHit ? '<div class="cap-warn">⚠️ 今月の没収上限' + fmt(ST.depositConfig.cap) + 'に到達。</div>' : '') +
       '<div class="usage-opts">' +
         FU.map((u,i) =>
           '<div class="usage-opt" onclick="selU(' + i + ')">' +
@@ -447,7 +450,7 @@ function confirmDep() {
 }
 
 function openRewardModal(period, isReward) {
-  const list = RL[period][isReward ? 'reward' : 'penalty'], pl = DL[period];
+  const list = ST.rewards[period][isReward ? 'reward' : 'penalty'], pl = DL[period];
   document.getElementById('sh-emoji').textContent = isReward ? '🎉' : '💪';
   document.getElementById('sh-title').textContent = isReward ? pl+'達成！おめでとう' : pl+'未達…罰ゲームです';
   if (isReward) {
@@ -575,10 +578,13 @@ function renderWeekly() {
     tableRows += '<td class="cell-diff-total ' + dc + '" id="tdiff-' + ki + '">' + (wd>0?'+'+wd:wd) + '</td></tr>';
 
     card.innerHTML =
-      '<div class="kpi-header">' +
-        '<span class="kpi-dot" style="background:' + color + '"></span>' +
-        '<span class="kpi-title">' + kpi.name + '</span>' +
-        '<span class="kpi-badge">週目標 ' + w + '件</span>' +
+      '<div class="kpi-header" style="align-items:flex-start;">' +
+        '<span class="kpi-dot" style="background:' + color + ';margin-top:3px;flex-shrink:0;"></span>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="kpi-title">' + kpi.name + '</div>' +
+          (kpi.indicator ? '<div style="font-size:11px;color:var(--text2);margin-top:3px;line-height:1.4;">📌 ' + kpi.indicator + '</div>' : '') +
+        '</div>' +
+        '<span class="kpi-badge" style="flex-shrink:0;margin-left:8px;">週目標 ' + w + '件</span>' +
       '</div>' +
       '<table class="kpi-table">' +
         '<thead><tr><th class="th-label"></th>' + DAYS.map((d,di)=>'<th class="th-day'+(isCurrentWeek&&di===todayIdx?' th-today':'')+'">'+(isCurrentWeek&&di===todayIdx?'<b>'+d+'</b>':d)+'</th>').join('') + '<th class="th-total">計</th></tr></thead>' +
@@ -638,10 +644,13 @@ function renderMonthly() {
     const pc=pct>=80?'#16A34A':'#DC2626';
     const card=document.createElement('div'); card.className='card';
     card.innerHTML =
-      '<div class="kpi-header">' +
-        '<span class="kpi-dot" style="background:'+color+'"></span>' +
-        '<span class="kpi-title">'+kpi.name+'</span>' +
-        '<span style="margin-left:auto;font-size:12px;font-weight:500;color:'+pc+';">'+pct+'% '+(pct>=80?'✓':'✗')+'</span>' +
+      '<div class="kpi-header" style="align-items:flex-start;">' +
+        '<span class="kpi-dot" style="background:'+color+';margin-top:3px;flex-shrink:0;"></span>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="kpi-title">'+kpi.name+'</div>' +
+          (kpi.indicator ? '<div style="font-size:11px;color:var(--text2);margin-top:3px;line-height:1.4;">📌 '+kpi.indicator+'</div>' : '') +
+        '</div>' +
+        '<span style="flex-shrink:0;margin-left:8px;font-size:12px;font-weight:500;color:'+pc+';">'+pct+'% '+(pct>=80?'✓':'✗')+'</span>' +
       '</div>' +
       '<div class="summary-row">' +
         '<div class="stat-card"><div class="stat-label">実績</div><div class="stat-val" style="color:'+color+'">'+ta+'</div></div>' +
@@ -689,10 +698,13 @@ function renderYearly() {
     const ta=md.reduce((s,m)=>s+m.a,0), tg=md.reduce((s,m)=>s+m.g,0), pct=tg>0?Math.round(ta/tg*100):0;
     const card=document.createElement('div'); card.className='card';
     card.innerHTML =
-      '<div class="kpi-header">' +
-        '<span class="kpi-dot" style="background:'+color+'"></span>' +
-        '<span class="kpi-title">'+kpi.name+'</span>' +
-        '<span class="kpi-badge" style="color:'+color+';font-weight:500">'+pct+'% ('+ta+'/'+tg+'件)</span>' +
+      '<div class="kpi-header" style="align-items:flex-start;">' +
+        '<span class="kpi-dot" style="background:'+color+';margin-top:3px;flex-shrink:0;"></span>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="kpi-title">'+kpi.name+'</div>' +
+          (kpi.indicator ? '<div style="font-size:11px;color:var(--text2);margin-top:3px;line-height:1.4;">📌 '+kpi.indicator+'</div>' : '') +
+        '</div>' +
+        '<span class="kpi-badge" style="flex-shrink:0;margin-left:8px;color:'+color+';font-weight:500">'+pct+'% ('+ta+'/'+tg+'件)</span>' +
       '</div>' +
       '<div class="chart-wrap" style="height:180px;"><canvas id="ychart-'+ki+'" role="img"></canvas></div>' +
       '<div class="chart-legend">' +
@@ -722,28 +734,29 @@ function renderDeposit() {
   const tF=h.filter(x=>x.result==='fail').reduce((s,x)=>s+x.amount,0);
   const mk=mkKey(), tmf=ST.deposit.monthlyForfeit[mk]||0, rem=getRemCap();
   const RULES = [
-    '毎朝500円・毎週月曜3,500円・毎月1日25,000円を封筒へ',
+    '毎朝'+fmt(ST.depositConfig.amounts.day)+'（日次）・毎週月曜'+fmt(ST.depositConfig.amounts.week)+'（週次）・毎月1日'+fmt(ST.depositConfig.amounts.month)+'（月次）を封筒へ',
     '達成基準は全KPI平均80%以上。79%以下は問答無用で未達',
     '達成した預け金は自分の報酬予算として使える',
     '未達の預け金は24時間以内に募金する',
     '惜しかった・忙しかった・疲れていた、は未達扱い',
     '例外は体調不良・仕事/家族の緊急対応・災害事故のみ',
-    '月間の没収上限は' + fmt(MFC),
-    '2回連続未達で×1.5倍、3回以上で×2倍'
+    '月間の没収上限は'+fmt(ST.depositConfig.cap)+'。上限到達後は没収なし',
+    '2回連続未達で×1.5倍、3回以上で×2倍（設定額が基準）',
+    '金額は設定タブの「預け金の金額設定」からいつでも変更可'
   ];
   let html =
     '<div class="dep-hero">' +
-      '<div style="font-size:11px;font-weight:500;color:#92400E;letter-spacing:.05em;margin-bottom:10px;">💰 久保田式・預け金制度</div>' +
+      '<div style="font-size:11px;font-weight:500;color:#92400E;letter-spacing:.05em;margin-bottom:10px;">🔥 有言実金～鬼KPI管理～</div>' +
       '<div class="d-grid">' +
         '<div class="d-stat"><div class="d-sl">達成で獲得（累計）</div><div class="d-sv" style="color:#16A34A;">' + fmt(tA) + '</div></div>' +
         '<div class="d-stat"><div class="d-sl">未達で没収（累計）</div><div class="d-sv" style="color:#DC2626;">' + fmt(tF) + '</div></div>' +
-        '<div class="d-stat"><div class="d-sl">今月の没収額</div><div class="d-sv" style="color:' + (tmf>=MFC?'#DC2626':'#B45309') + ';">' + fmt(tmf) + '</div></div>' +
+        '<div class="d-stat"><div class="d-sl">今月の没収額</div><div class="d-sv" style="color:' + (tmf>=ST.depositConfig.cap?'#DC2626':'#B45309') + ';">' + fmt(tmf) + '</div></div>' +
         '<div class="d-stat"><div class="d-sl">今月の没収残枠</div><div class="d-sv" style="color:#0F6E56;">' + fmt(rem) + '</div></div>' +
       '</div>' +
     '</div>';
 
   ['day','week','month'].forEach(period => {
-    const base=DB[period], streak=ST.deposit.streaks[period]||0, cur=calcDepAmt(period), pl=DL[period];
+    const base=ST.depositConfig.amounts[period], streak=ST.deposit.streaks[period]||0, cur=calcDepAmt(period), pl=DL[period];
     const timing = {day:'毎日就寝前', week:'日曜夜', month:'月末夜'}[period];
     let sk = '';
     if      (streak===0) sk = '<span class="sk-badge sk-ok">連続未達なし（基本額）</span>';
@@ -771,7 +784,7 @@ function renderDeposit() {
 
   html +=
     '<div class="card" style="margin-top:4px;">' +
-      '<div class="sec-title">久保田式ルール</div>' +
+      '<div class="sec-title">有言実金ルール</div>' +
       RULES.map((r,i) => '<div class="rule-item"><span class="rn">'+(i+1)+'</span><span>'+r+'</span></div>').join('') +
     '</div>';
 
@@ -799,16 +812,60 @@ function renderDeposit() {
   document.getElementById('deposit-content').innerHTML = html;
 }
 
+function renderDepositConfigCard() {
+  const cfg = ST.depositConfig;
+  const rows = [
+    { key:'day',   label:'💰 日次（毎日）',  step:100,  isCap:false },
+    { key:'week',  label:'📅 週次（毎週）',  step:500,  isCap:false },
+    { key:'month', label:'🗓 月次（毎月）',  step:1000, isCap:false },
+    { key:'cap',   label:'🔒 月間没収上限', step:1000, isCap:true  },
+  ];
+  const rowsHTML = rows.map((r, idx) => {
+    const val = r.isCap ? cfg.cap : cfg.amounts[r.key];
+    const decCall = r.isCap ? 'updDepCfgCap(' + (-r.step) + ')' : 'updDepCfgAmt(\'' + r.key + '\',' + (-r.step) + ')';
+    const incCall = r.isCap ? 'updDepCfgCap(' + r.step + ')' : 'updDepCfgAmt(\'' + r.key + '\',' + r.step + ')';
+    const border = idx < rows.length - 1 ? 'border-bottom:1px solid var(--border);' : '';
+    return (
+      '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;' + border + '">' +
+        '<span style="flex:1;font-size:13px;color:var(--text);">' + r.label + '</span>' +
+        '<button class="btn-minus" style="width:34px;height:34px;" onclick="' + decCall + '">−</button>' +
+        '<span id="depcfg-' + r.key + '" class="tap-display" style="min-width:62px;text-align:center;font-size:14px;font-weight:600;color:#B45309;">' + fmt(val) + '</span>' +
+        '<button class="btn-plus" style="background:#B45309;width:34px;height:34px;font-size:20px;" onclick="' + incCall + '">+</button>' +
+      '</div>'
+    );
+  }).join('');
+  return (
+    '<div class="card" style="margin-bottom:12px;">' +
+      '<div class="sec-title" style="margin-bottom:6px;">💰 預け金の金額設定</div>' +
+      '<div style="font-size:11px;color:var(--text2);margin-bottom:10px;line-height:1.5;">毎日・毎週・毎月の基本預け金と、月間没収上限を変更できます。<br>連続未達ペナルティ（×1.5 / ×2）はこの基本額に対して計算されます。</div>' +
+      rowsHTML +
+    '</div>'
+  );
+}
+function updDepCfgAmt(period, delta) {
+  ST.depositConfig.amounts[period] = Math.max(0, (ST.depositConfig.amounts[period]||0) + delta);
+  sv();
+  const el = document.getElementById('depcfg-' + period);
+  if (el) { el.textContent = fmt(ST.depositConfig.amounts[period]); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+}
+function updDepCfgCap(delta) {
+  ST.depositConfig.cap = Math.max(0, (ST.depositConfig.cap||0) + delta);
+  sv();
+  const el = document.getElementById('depcfg-cap');
+  if (el) { el.textContent = fmt(ST.depositConfig.cap); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+}
 function renderSettings() {
   const kpiCards = ST.kpis.map((kpi,ki) => {
     const color = KC[kpi.color];
     let goalCells = '';
     DAYS.forEach((_,di) => {
       goalCells +=
-        '<td style="padding:2px 3px;">' +
-          '<input type="number" class="goal-input" min="0" value="' + kpi.goals[di] + '" ' +
-            'style="border-top:2.5px solid ' + color + ';" ' +
-            'onchange="ST.kpis[' + ki + '].goals[' + di + ']=Math.max(0,Number(this.value));sv();updWS(' + ki + ')">' +
+        '<td style="padding:2px 1px;text-align:center;">' +
+          '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;">' +
+            '<button class="btn-plus" style="background:' + color + ';width:34px;height:34px;font-size:20px;" onclick="updGoal(' + ki + ',' + di + ',1)">+</button>' +
+            '<span id="gdisp-' + ki + '-' + di + '" class="tap-display" style="color:' + color + ';">' + (kpi.goals[di]||0) + '</span>' +
+            '<button class="btn-minus" onclick="updGoal(' + ki + ',' + di + ',-1)">−</button>' +
+          '</div>' +
         '</td>';
     });
     return (
@@ -821,6 +878,10 @@ function renderSettings() {
         '<div class="s-row" style="margin-bottom:12px;">' +
           '<label>名前</label>' +
           '<input type="text" class="kpi-name-input" value="' + kpi.name + '" onchange="ST.kpis[' + ki + '].name=this.value;sv()">' +
+        '</div>' +
+        '<div style="margin-bottom:12px;">' +
+          '<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:5px;letter-spacing:.03em;">指標 <span style="font-weight:400;color:var(--text3);">— 達成の基準・定義を記入</span></div>' +
+          '<input type="text" class="kpi-name-input" placeholder="例：1日5件・週80%以上、などKPIの達成基準" value="' + (kpi.indicator||'') + '" onchange="ST.kpis[' + ki + '].indicator=this.value;sv()">' +
         '</div>' +
         '<div class="s-row" style="margin-bottom:12px;">' +
           '<label>色</label>' +
@@ -860,9 +921,82 @@ function renderSettings() {
       '<div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.5;">エクスポート：全データをJSONで保存<br>インポート：バックアップから復元（現データは上書き）</div>' +
     '</div>';
 
-  document.getElementById('settings-content').innerHTML = kpiCards + addBtn + expCard;
+  const guideCard = `
+    <div class="card" style="margin-bottom:12px;">
+      <div class="sec-title" style="margin-bottom:10px;">📖 アプリの使い方</div>
+
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border);">📅 週次タブ</div>
+      <ul style="margin:0 0 12px 0;padding-left:18px;font-size:12px;color:var(--text2);line-height:1.9;">
+        <li>各KPIの実績数を曜日ごとに入力する</li>
+        <li>目標件数は設定で曜日別に変更できる</li>
+        <li>今日の列はハイライト表示される</li>
+        <li>◀ ▶ ボタンで前後の週に移動できる</li>
+        <li>差分がプラスなら青、マイナスなら赤で表示</li>
+      </ul>
+
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border);">📆 月次・年間タブ</div>
+      <ul style="margin:0 0 12px 0;padding-left:18px;font-size:12px;color:var(--text2);line-height:1.9;">
+        <li>週次入力データを自動集計して表示する</li>
+        <li>月次は当月・年間は今年の全週分を合算</li>
+        <li>達成率バッジ（緑/黄/赤）で一目で状況を把握できる</li>
+        <li>グラフは累計の実績と目標の推移を表示</li>
+      </ul>
+
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border);">💰 預け金の預け方・タイミング</div>
+      <ul style="margin:0 0 4px 0;padding-left:18px;font-size:12px;color:var(--text2);line-height:1.9;">
+        <li><b>日次：</b>毎朝、仕事を始める前に封筒へ入れる。その日の達成/未達は就寝前に判定する</li>
+        <li><b>週次：</b>月曜の朝に封筒へ入れる。週の達成/未達は日曜夜に判定する</li>
+        <li><b>月次：</b>毎月1日の朝に封筒へ入れる。月の達成/未達は月末夜に判定する</li>
+        <li>封筒は「達成分＝自分の報酬予算」「未達分＝翌24時間以内に募金」として管理する</li>
+        <li>達成判定は全KPI平均80%以上。1件でも大きく未達だと平均が下がるので注意</li>
+      </ul>
+      <div style="background:#FEF3C7;border-radius:8px;padding:8px 10px;margin-bottom:12px;font-size:11px;color:#92400E;line-height:1.7;">
+        ⚠️ 預け金は「あらかじめ封筒に入れる」ことに意味がある。達成してから入れるのではなく、<b>先払いでコミット</b>するのがルール。
+      </div>
+
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border);">🔥 預け金タブの判定ボタンの使い方</div>
+      <ul style="margin:0 0 12px 0;padding-left:18px;font-size:12px;color:var(--text2);line-height:1.9;">
+        <li><b>🎉 達成（手動）：</b>就寝前・週末・月末に実績を確認し、全KPI平均80%以上なら押す。封筒の預け金は自分の報酬予算になる</li>
+        <li><b>😢 未達（手動）：</b>平均79%以下だった場合に押す。翌24時間以内に封筒の預け金を募金すること</li>
+        <li><b>🙏 例外申請：</b>体調不良・仕事や家族の緊急対応・災害事故のときのみ使用可。言い訳には使わない</li>
+        <li>判定すると自動で達成連続数/未達連続数が更新され、次回の預け金倍率が変わる</li>
+        <li>2回連続未達で×1.5倍・3回以上で×2倍。達成すればリセットされる</li>
+        <li>月間没収上限に達したら、それ以上の没収は発生しない</li>
+      </ul>
+
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border);">🎲 報酬・罰ゲームのタイミングと使い方</div>
+      <ul style="margin:0 0 4px 0;padding-left:18px;font-size:12px;color:var(--text2);line-height:1.9;">
+        <li>達成ボタンまたは未達ボタンを押すと、自動でガチャ結果が表示される</li>
+        <li><b>達成のとき：</b>報酬ガチャが回り、ランダムで報酬内容が決まる。封筒の預け金を使って報酬を実行する</li>
+        <li><b>未達のとき：</b>罰ゲームガチャが回り、ランダムで罰ゲーム内容が決まる。募金と合わせて罰ゲームも実行すること</li>
+        <li>報酬・罰ゲームの内容は設定タブから自由に編集・追加・削除できる</li>
+        <li>ガチャ結果は気に入らなくても原則そのまま実行すること。それが緊張感を生む</li>
+      </ul>
+      <div style="background:#F0FDF4;border-radius:8px;padding:8px 10px;margin-bottom:12px;font-size:11px;color:#15803D;line-height:1.7;">
+        💡 報酬は「達成した自分へのご褒美」として封筒の預け金を使って本当に実行すること。罰ゲームも必ず実行することで緊張感が続く。
+      </div>
+
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border);">⚙️ 設定タブ</div>
+      <ul style="margin:0 0 4px 0;padding-left:18px;font-size:12px;color:var(--text2);line-height:1.9;">
+        <li>KPIの名前・色・曜日別の目標件数を変更できる</li>
+        <li>指標欄に達成基準を書いておくと週次・月次・年間にも表示される</li>
+        <li>KPIは最大7件まで追加・削除できる</li>
+        <li>預け金の日次・週次・月次の金額と月間没収上限を変更できる</li>
+        <li>報酬・罰ゲームの内容を自由に編集・追加・削除できる</li>
+        <li>データはエクスポートでJSON保存、インポートで復元できる</li>
+      </ul>
+    </div>`;
+
+  document.getElementById('settings-content').innerHTML = kpiCards + addBtn + renderDepositConfigCard() + renderRewardCard() + expCard + guideCard;
 }
 function updWS(ki) { const el=document.getElementById('wsum-'+ki); if(el) el.textContent=wgt(ki); }
+function updGoal(ki, di, delta) {
+  ST.kpis[ki].goals[di] = Math.max(0, (ST.kpis[ki].goals[di]||0) + delta);
+  sv();
+  const el = document.getElementById('gdisp-'+ki+'-'+di);
+  if (el) { el.textContent = ST.kpis[ki].goals[di]; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+  updWS(ki);
+}
 
 function addKpi() {
   if (ST.kpis.length >= 7) { alert('KPIは最大7件まで設定できます'); return; }
@@ -903,6 +1037,114 @@ function importData() {
     reader.readAsText(e.target.files[0]);
   };
   input.click();
+}
+
+function escH(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function rlItemHTML(period, type, i, val) {
+  const eid='rl-'+period+'-'+type, color=type==='reward'?'#16A34A':'#DC2626';
+  return (
+    '<div id="'+eid+'-i'+i+'" style="display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-top:0.5px solid var(--border);">' +
+      '<span style="font-size:11px;color:var(--text3);width:20px;flex-shrink:0;padding-top:2px;">'+(i+1)+'.</span>' +
+      '<span style="flex:1;font-size:12px;color:var(--text);line-height:1.5;">'+escH(val)+'</span>' +
+      '<div style="display:flex;gap:4px;flex-shrink:0;margin-left:4px;">' +
+        '<button onclick="editRL(\''+period+'\',\''+type+'\','+i+')" style="font-size:11px;padding:4px 8px;background:var(--bg2);border:0.5px solid var(--border);border-radius:5px;color:var(--text2);cursor:pointer;-webkit-tap-highlight-color:transparent;">✏️</button>' +
+        '<button onclick="deleteRL(\''+period+'\',\''+type+'\','+i+')" style="font-size:11px;padding:4px 8px;background:#FEE2E2;border:none;border-radius:5px;color:#DC2626;cursor:pointer;-webkit-tap-highlight-color:transparent;">🗑</button>' +
+      '</div>' +
+    '</div>'
+  );
+}
+function rlFooterHTML(period, type) {
+  return (
+    '<div style="padding:8px 12px;border-top:0.5px solid var(--border);display:flex;gap:8px;">' +
+      '<button onclick="addRL(\''+period+'\',\''+type+'\')" style="flex:1;padding:8px;background:none;border:0.5px dashed var(--border2);border-radius:var(--rm);font-size:12px;color:var(--text2);cursor:pointer;">＋ 追加</button>' +
+      '<button onclick="resetRL(\''+period+'\',\''+type+'\')" style="padding:8px 12px;background:none;border:0.5px solid var(--border);border-radius:var(--rm);font-size:11px;color:var(--text3);cursor:pointer;">元に戻す</button>' +
+    '</div>'
+  );
+}
+function renderRewardCard() {
+  const PL={day:'日次',week:'週次',month:'月次'}, TL={reward:'🎉 報酬',penalty:'💀 罰ゲーム'};
+  const TC={reward:'#16A34A',penalty:'#DC2626'}, TBG={reward:'#F0FDF4',penalty:'#FEF2F2'};
+  let html = '<div class="card" style="margin-top:4px;"><div class="sec-title" style="margin-bottom:10px;">報酬・罰ゲーム 一覧 / 編集</div>';
+  ['day','week','month'].forEach(period => {
+    ['reward','penalty'].forEach(type => {
+      const items=ST.rewards[period][type], eid='rl-'+period+'-'+type;
+      const color=TC[type], bg=TBG[type];
+      html +=
+        '<div style="border:0.5px solid var(--border);border-radius:var(--rm);margin-bottom:8px;overflow:hidden;">' +
+          '<div onclick="toggleRL(\''+eid+'\')" style="display:flex;align-items:center;gap:8px;padding:11px 12px;cursor:pointer;background:'+bg+';-webkit-tap-highlight-color:transparent;">' +
+            '<span style="font-size:13px;font-weight:500;color:'+color+';flex:1;">'+PL[period]+' '+TL[type]+'</span>' +
+            '<span style="font-size:11px;color:var(--text2);">'+items.length+'件</span>' +
+            '<span id="'+eid+'-arr" style="font-size:10px;color:var(--text2);margin-left:6px;">▶</span>' +
+          '</div>' +
+          '<div id="'+eid+'" style="display:none;">' +
+            items.map((v,i) => rlItemHTML(period,type,i,v)).join('') +
+            rlFooterHTML(period,type) +
+          '</div>' +
+        '</div>';
+    });
+  });
+  html += '</div>';
+  return html;
+}
+function toggleRL(id) {
+  const el=document.getElementById(id), arr=document.getElementById(id+'-arr');
+  if(!el) return;
+  const open=el.style.display!=='none';
+  el.style.display=open?'none':'block';
+  if(arr) arr.textContent=open?'▶':'▼';
+}
+function editRL(period, type, idx) {
+  const eid='rl-'+period+'-'+type, el=document.getElementById(eid+'-i'+idx);
+  if(!el) return;
+  const val=ST.rewards[period][type][idx], color=type==='reward'?'#16A34A':'#DC2626';
+  el.innerHTML =
+    '<span style="font-size:11px;color:var(--text3);width:20px;flex-shrink:0;padding-top:6px;">'+(idx+1)+'.</span>' +
+    '<textarea id="rl-ta-'+eid+'-'+idx+'" style="flex:1;font-size:12px;border:1.5px solid '+color+';border-radius:6px;padding:6px;min-height:56px;resize:none;background:var(--bg);color:var(--text);line-height:1.5;">'+escH(val)+'</textarea>' +
+    '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;margin-left:4px;">' +
+      '<button onclick="saveRL(\''+period+'\',\''+type+'\','+idx+')" style="font-size:11px;padding:5px 8px;background:'+color+';border:none;border-radius:5px;color:#fff;cursor:pointer;">保存</button>' +
+      '<button onclick="cancelRL(\''+period+'\',\''+type+'\','+idx+')" style="font-size:11px;padding:5px 8px;background:var(--bg2);border:0.5px solid var(--border);border-radius:5px;color:var(--text2);cursor:pointer;">取消</button>' +
+    '</div>';
+  const ta=document.getElementById('rl-ta-'+eid+'-'+idx);
+  if(ta){ ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length); }
+}
+function saveRL(period, type, idx) {
+  const eid='rl-'+period+'-'+type, ta=document.getElementById('rl-ta-'+eid+'-'+idx);
+  if(!ta) return;
+  const v=ta.value.trim(); if(!v) return;
+  ST.rewards[period][type][idx]=v; sv();
+  const el=document.getElementById(eid+'-i'+idx);
+  if(el) el.outerHTML=rlItemHTML(period,type,idx,v);
+}
+function cancelRL(period, type, idx) {
+  const eid='rl-'+period+'-'+type, el=document.getElementById(eid+'-i'+idx);
+  if(el) el.outerHTML=rlItemHTML(period,type,idx,ST.rewards[period][type][idx]);
+}
+function rlRefreshContainer(period, type) {
+  const eid='rl-'+period+'-'+type, container=document.getElementById(eid);
+  if(!container) return;
+  const items=ST.rewards[period][type];
+  container.innerHTML=items.map((v,i)=>rlItemHTML(period,type,i,v)).join('')+rlFooterHTML(period,type);
+  const hdr=container.previousElementSibling;
+  if(hdr){ const cnt=hdr.querySelectorAll('span')[1]; if(cnt) cnt.textContent=items.length+'件'; }
+}
+function deleteRL(period, type, idx) {
+  if(!confirm('この項目を削除しますか？')) return;
+  ST.rewards[period][type].splice(idx,1); sv();
+  rlRefreshContainer(period,type);
+}
+function addRL(period, type) {
+  const newItem='新しい項目（ここをタップして編集）';
+  ST.rewards[period][type].push(newItem); sv();
+  const idx=ST.rewards[period][type].length-1;
+  rlRefreshContainer(period,type);
+  setTimeout(()=>{ editRL(period,type,idx); document.getElementById('rl-'+period+'-'+type+'-i'+idx)?.scrollIntoView({behavior:'smooth',block:'center'}); },0);
+}
+function resetRL(period, type) {
+  const typeLabel={reward:'報酬',penalty:'罰ゲーム'}[type];
+  if(!confirm(DL[period]+'の'+typeLabel+'をデフォルトに戻しますか？\n編集内容はすべて失われます。')) return;
+  ST.rewards[period][type]=[...RL[period][type]]; sv();
+  rlRefreshContainer(period,type);
 }
 
 function showTab(name) {
