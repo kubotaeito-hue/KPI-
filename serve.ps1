@@ -3,7 +3,7 @@ $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add("http://localhost:$port/")
 $listener.Start()
 Write-Output "Server listening on http://localhost:$port"
-$filePath = Join-Path $PSScriptRoot "kpi_app.html"
+$filePath = Join-Path $PSScriptRoot "index.html"
 while ($listener.IsListening) {
     $context = $listener.GetContext()
     $response = $context.Response

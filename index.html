@@ -4,27 +4,56 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>有言実金～鬼KPI管理～</title>
+<script>
+(function(){
+  var svg =
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>" +
+      "<rect width='32' height='32' rx='7' fill='#1E1712'/>" +
+      "<circle cx='16' cy='15' r='13' fill='#3A1410'/>" +
+      "<path d='M9 9 L4.5 1 L13 7 Z' fill='#E0A93C' stroke='#C8841F' stroke-width='0.6'/>" +
+      "<path d='M23 9 L27.5 1 L19 7 Z' fill='#E0A93C' stroke='#C8841F' stroke-width='0.6'/>" +
+      "<ellipse cx='16' cy='18' rx='11' ry='10' fill='#D33A2C'/>" +
+      "<path d='M8 14.5 L14 17.2' stroke='#7A1B14' stroke-width='2' stroke-linecap='round'/>" +
+      "<path d='M24 14.5 L18 17.2' stroke='#7A1B14' stroke-width='2' stroke-linecap='round'/>" +
+      "<ellipse cx='12' cy='19' rx='2.5' ry='2.9' fill='#FFE08A'/>" +
+      "<ellipse cx='20' cy='19' rx='2.5' ry='2.9' fill='#FFE08A'/>" +
+      "<circle cx='12' cy='19.2' r='1.1' fill='#3A1010'/>" +
+      "<circle cx='20' cy='19.2' r='1.1' fill='#3A1010'/>" +
+      "<path d='M11 23 Q16 27.5 21 23 Z' fill='#3A1010'/>" +
+      "<path d='M12.6 23 L14 26 L15.4 23 Z' fill='#fff'/>" +
+      "<path d='M16.6 23 L18 26 L19.4 23 Z' fill='#fff'/>" +
+    "</svg>";
+  var link = document.createElement('link');
+  link.rel = 'icon';
+  link.type = 'image/svg+xml';
+  link.href = 'data:image/svg+xml,' + encodeURIComponent(svg);
+  document.head.appendChild(link);
+})();
+</script>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0;touch-action:manipulation;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;color:#111;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Mincho ProN',sans-serif;background:#120D0A;color:#F1E7D8;background-image:radial-gradient(circle at 50% -8%,rgba(255,90,20,.12),transparent 55%);background-attachment:fixed;}
 :root{
-  --bg:#fff;--bg2:#f5f5f5;--bg3:#ebebeb;
-  --border:#e0e0e0;--border2:#ccc;
-  --text:#111;--text2:#666;--text3:#999;
+  --bg:#1E1712;--bg2:#2A2017;--bg3:#352A1F;
+  --border:#3A2E22;--border2:#4D3E2E;
+  --text:#F1E7D8;--text2:#A99A86;--text3:#74675a;
   --r:12px;--rm:8px;
-  --c-blue:#2563EB;--c-green:#16A34A;--c-red:#DC2626;--c-gold:#B45309;
+  --c-blue:#D33A2C;--c-green:#34C27A;--c-red:#E0483B;--c-gold:#E0A93C;
+  --oni:#D33A2C;--gold:#E0A93C;--ember:#FF7A1A;
 }
-@media(prefers-color-scheme:dark){
-  :root{--bg:#1a1a1a;--bg2:#242424;--bg3:#2e2e2e;--border:#333;--border2:#444;--text:#f0f0f0;--text2:#aaa;--text3:#666;}
-}
-.app{width:100%;max-width:430px;margin:0 auto;padding:0 0 4rem;font-size:14px;background:var(--bg);min-height:100vh;}
-.tab-bar{display:flex;border-bottom:0.5px solid var(--border);margin-bottom:1rem;position:sticky;top:0;background:var(--bg);z-index:10;}
-.tab{flex:1;padding:8px 2px;font-size:11px;font-weight:500;text-align:center;border:none;background:none;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;}
-.tab.active{color:var(--c-blue);border-bottom-color:var(--c-blue);}
+.app{width:100%;max-width:430px;margin:0 auto;padding:0 0 4rem;font-size:14px;background:var(--bg);min-height:100vh;box-shadow:0 0 60px rgba(0,0,0,.5);}
+.app-header{position:relative;padding:15px 16px 13px;text-align:center;background:linear-gradient(180deg,#2E1611,#1E1712);border-bottom:1px solid rgba(224,169,60,.32);overflow:hidden;}
+.app-header::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(255,122,26,.22),transparent 62%);pointer-events:none;}
+.app-header-title{position:relative;font-size:23px;font-weight:800;letter-spacing:.16em;color:#F1E7D8;text-shadow:0 1px 10px rgba(255,122,26,.45);}
+.app-header-title .gd{color:var(--gold);}
+.app-header-sub{position:relative;font-size:10px;letter-spacing:.42em;color:var(--oni);margin-top:4px;font-weight:700;padding-left:.42em;}
+.tab-bar{display:flex;border-bottom:1px solid var(--border);margin-bottom:1rem;position:sticky;top:0;background:rgba(30,23,18,.96);backdrop-filter:blur(8px);z-index:10;}
+.tab{flex:1;padding:8px 2px;font-size:11px;font-weight:600;text-align:center;border:none;background:none;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;}
+.tab.active{color:var(--oni);border-bottom-color:var(--oni);text-shadow:0 0 12px rgba(211,58,44,.55);}
 .section{display:none;padding:0 12px;}
 .section.active{display:block;}
-.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px;}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.022),transparent);background-color:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px;}
 .week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .nav-btn{background:none;border:0.5px solid var(--border);border-radius:var(--rm);padding:6px 12px;font-size:12px;color:var(--text2);cursor:pointer;}
 .wl{font-size:13px;font-weight:500;color:var(--text);}
@@ -42,8 +71,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .cell-actual{text-align:center;vertical-align:middle;padding:2px!important;}
 .cell-actual-total{text-align:center;font-size:14px;font-weight:700;padding:4px 2px!important;vertical-align:middle;}
 .cell-diff{text-align:center;font-size:12px;font-weight:500;border-radius:4px;padding:5px 2px!important;vertical-align:middle;}
-.diff-pos{background:#E1F5EE;color:#0F6E56;}
-.diff-neg{background:#FAECE7;color:#D85A30;}
+.diff-pos{background:rgba(52,194,122,.16);color:#4ED88D;}
+.diff-neg{background:rgba(224,72,59,.18);color:#F0926A;}
 .diff-zero{color:var(--text2);}
 .cell-diff-total{text-align:center;font-size:12px;font-weight:700;border-radius:4px;padding:5px 2px!important;vertical-align:middle;}
 .tap-cell{display:flex;flex-direction:column;align-items:center;gap:2px;}
@@ -63,7 +92,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .stat-card{flex:1;background:var(--bg2);border-radius:var(--rm);padding:10px;}
 .stat-label{font-size:11px;color:var(--text2);margin-bottom:4px;}
 .stat-val{font-size:18px;font-weight:500;}
-.sec-title{font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em;}
+.sec-title{font-size:11px;font-weight:700;color:var(--gold);margin-bottom:10px;letter-spacing:.08em;}
 .note-area{width:100%;border:0.5px solid var(--border);border-radius:var(--rm);padding:10px;font-size:13px;min-height:80px;background:var(--bg);color:var(--text);resize:none;}
 .save-btn{width:100%;padding:10px;background:var(--c-blue);color:#fff;border:none;border-radius:var(--rm);font-size:14px;font-weight:500;cursor:pointer;margin-top:8px;}
 .save-btn:active{opacity:.85;}
@@ -83,8 +112,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .pct-val{font-size:13px;font-weight:500;width:38px;text-align:right;flex-shrink:0;}
 .judge-inline{border-radius:var(--rm);padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1.5px solid;margin-top:8px;-webkit-tap-highlight-color:transparent;transition:opacity .1s;}
 .judge-inline:active{opacity:.8;}
-.judge-inline-achieve{background:#F0FDF4;border-color:#86EFAC;}
-.judge-inline-fail{background:#FEF2F2;border-color:#FCA5A5;}
+.judge-inline-achieve{background:rgba(52,194,122,.12);border-color:rgba(52,194,122,.5);}
+.judge-inline-fail{background:rgba(224,72,59,.12);border-color:rgba(224,72,59,.5);}
 .judge-done-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 10px;border-radius:10px;background:var(--bg2);color:var(--text2);margin-top:8px;}
 .banner-row{display:flex;gap:8px;margin-bottom:10px;}
 .ach-banner{flex:1;display:flex;align-items:center;gap:8px;padding:10px;border-radius:var(--rm);cursor:pointer;border:0.5px solid;transition:opacity .1s;-webkit-tap-highlight-color:transparent;}
@@ -99,61 +128,97 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sh-sub{font-size:12px;color:var(--text2);text-align:center;margin-bottom:20px;line-height:1.6;}
 .reward-cards{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
 .reward-card{border:0.5px solid var(--border);border-radius:var(--r);padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;-webkit-tap-highlight-color:transparent;}
-.reward-card.selected{border:1.5px solid #16A34A;background:#F0FDF4;}
+.reward-card.selected{border:1.5px solid var(--c-green);background:rgba(52,194,122,.12);}
 .rc-num{font-size:11px;color:var(--text2);width:18px;flex-shrink:0;}
 .rc-text{font-size:14px;color:var(--text);line-height:1.5;}
-.penalty-box{border:1.5px solid #DC2626;border-radius:var(--r);padding:18px;margin-bottom:18px;background:#FEF2F2;text-align:center;}
-.pb-label{font-size:10px;font-weight:500;color:#DC2626;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;}
-.pb-text{font-size:15px;font-weight:500;color:#7F1D1D;line-height:1.6;}
+.penalty-box{border:1.5px solid var(--c-red);border-radius:var(--r);padding:18px;margin-bottom:18px;background:rgba(224,72,59,.14);text-align:center;}
+.pb-label{font-size:10px;font-weight:600;color:#FF8A7A;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;}
+.pb-text{font-size:15px;font-weight:600;color:#F2B0A4;line-height:1.6;}
 .modal-btn{width:100%;padding:13px;border:none;border-radius:var(--rm);font-size:15px;font-weight:500;color:#fff;cursor:pointer;}
 .modal-btn:active{opacity:.85;}
 .modal-sub{width:100%;padding:10px;border:none;background:none;font-size:13px;color:var(--text2);cursor:pointer;margin-top:6px;}
 .usage-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}
 .usage-opt{border:0.5px solid var(--border);border-radius:var(--rm);padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;-webkit-tap-highlight-color:transparent;}
-.usage-opt.selected{border:1.5px solid var(--c-blue);background:#EFF6FF;}
+.usage-opt.selected{border:1.5px solid var(--oni);background:rgba(211,58,44,.13);}
 .uoi{font-size:20px;flex-shrink:0;}
 .uot{font-size:13px;color:var(--text);line-height:1.4;}
-.dep-hero{border-radius:var(--r);padding:16px;margin-bottom:12px;border:0.5px solid #F59E0B;background:#FFFBEB;}
+.dep-hero{border-radius:var(--r);padding:16px;margin-bottom:12px;border:1px solid rgba(224,169,60,.4);background:linear-gradient(180deg,rgba(224,169,60,.10),rgba(224,169,60,.02));}
 .d-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .d-stat{background:var(--bg);border-radius:var(--rm);padding:10px 12px;}
 .d-sl{font-size:10px;color:var(--text2);margin-bottom:3px;}
 .d-sv{font-size:18px;font-weight:500;}
-.p-card{border:0.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;}
+.p-card{border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;background-color:var(--bg2);}
 .p-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
 .p-label{font-size:13px;font-weight:500;color:var(--text);}
 .sk-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:3px 8px;border-radius:10px;margin-bottom:8px;}
-.sk-ok{background:#DCFCE7;color:#16A34A;}
-.sk-w{background:#FEF3C7;color:#92400E;}
-.sk-d{background:#FEE2E2;color:#DC2626;}
+.sk-ok{background:rgba(52,194,122,.16);color:#4ED88D;}
+.sk-w{background:rgba(224,169,60,.18);color:#E8BC5E;}
+.sk-d{background:rgba(224,72,59,.2);color:#FF8A7A;}
 .j-row{display:flex;gap:8px;margin-top:8px;}
 .j-btn{flex:1;padding:10px 6px;border-radius:var(--rm);font-size:12px;font-weight:500;cursor:pointer;border:none;-webkit-tap-highlight-color:transparent;transition:opacity .1s;}
 .j-btn:active{opacity:.8;}
-.j-ach{background:#DCFCE7;color:#16A34A;}
-.j-fail{background:#FEE2E2;color:#DC2626;}
-.j-ex{background:var(--bg2);color:var(--text2);}
+.j-ach{background:rgba(52,194,122,.16);color:#4ED88D;}
+.j-fail{background:rgba(224,72,59,.18);color:#FF8A7A;}
+.j-ex{background:var(--bg3);color:var(--text2);}
 .h-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--border);}
 .h-item:last-child{border-bottom:none;}
 .hbadge{font-size:10px;font-weight:500;padding:2px 7px;border-radius:10px;white-space:nowrap;flex-shrink:0;margin-top:2px;}
-.ba{background:#DCFCE7;color:#16A34A;}
-.bf{background:#FEE2E2;color:#DC2626;}
-.be{background:#F3F4F6;color:#6B7280;}
+.ba{background:rgba(52,194,122,.16);color:#4ED88D;}
+.bf{background:rgba(224,72,59,.18);color:#FF8A7A;}
+.be{background:rgba(255,255,255,.08);color:var(--text2);}
 .rule-item{display:flex;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--border);font-size:12px;line-height:1.5;color:var(--text);}
 .rule-item:last-child{border-bottom:none;}
 .rn{color:var(--text2);flex-shrink:0;width:20px;}
-.cap-warn{background:#FEF3C7;border:0.5px solid #F59E0B;border-radius:var(--rm);padding:8px 12px;font-size:12px;color:#92400E;margin-bottom:10px;}
-.th-today{background:#EFF6FF;color:var(--c-blue)!important;border-radius:4px;}
-.cell-today{background:rgba(37,99,235,.07);}
+.cap-warn{background:rgba(224,169,60,.15);border:1px solid rgba(224,169,60,.4);border-radius:var(--rm);padding:8px 12px;font-size:12px;color:#E8BC5E;margin-bottom:10px;}
+.title-bar{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#3A1A16,#6E1D16);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;}
+.title-icon{font-size:28px;flex-shrink:0;}
+.title-name{font-size:15px;font-weight:700;color:#fff;letter-spacing:.03em;}
+.title-sub{font-size:11px;color:rgba(255,255,255,.7);margin-top:1px;}
+.buddy-card{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#34160F,#6E1D16);border:1px solid rgba(224,169,60,.35);border-radius:var(--r);padding:14px;margin-bottom:10px;position:relative;overflow:hidden;box-shadow:inset 0 0 30px rgba(255,122,26,.1);}
+.buddy-card::before{content:'';position:absolute;top:-30%;right:-10%;width:120px;height:120px;background:radial-gradient(circle,rgba(255,122,26,.25),transparent 70%);pointer-events:none;}
+.buddy-char{width:84px;height:84px;flex-shrink:0;border-radius:50%;background:radial-gradient(circle at 50% 45%,rgba(255,209,102,.22),rgba(0,0,0,.15));border:1px solid rgba(224,169,60,.3);display:flex;align-items:center;justify-content:center;position:relative;}
+.char-svg{width:80px;height:80px;display:block;animation:charFloat 3s ease-in-out infinite;}
+@keyframes charFloat{0%,100%{transform:translateY(0) rotate(-1.5deg);}50%{transform:translateY(-4px) rotate(1.5deg);}}
+.buddy-tag{display:inline-block;font-size:10px;font-weight:600;color:#FFD166;background:rgba(255,209,102,.15);border:0.5px solid rgba(255,209,102,.4);border-radius:10px;padding:2px 8px;margin-bottom:5px;}
+.evo-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:1000;animation:popIn .3s ease;}
+.evo-box{background:linear-gradient(135deg,#34160F,#6E1D16);border:1px solid rgba(224,169,60,.45);border-radius:20px;padding:28px 32px;text-align:center;max-width:300px;box-shadow:0 10px 50px rgba(0,0,0,.5),inset 0 0 40px rgba(255,122,26,.12);}
+.devo-box{background:linear-gradient(135deg,#26201c,#3a2a22);border-color:rgba(160,150,140,.3);box-shadow:0 10px 50px rgba(0,0,0,.5);}
+.devo-warn{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#fff;background:rgba(220,38,38,.55);border:0.5px solid rgba(255,255,255,.25);border-radius:10px;padding:4px 9px;margin-top:6px;}
+.evo-char{width:130px;height:130px;margin:0 auto 6px;animation:evoPulse 1.2s ease-in-out infinite;}
+.evo-char .char-svg{width:130px;height:130px;animation:none;}
+@keyframes evoPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+.evo-label{font-size:12px;color:#FFD166;font-weight:600;letter-spacing:.1em;margin-bottom:4px;}
+.evo-name{font-size:22px;font-weight:800;color:#fff;margin-bottom:2px;}
+.evo-rank{font-size:13px;color:rgba(255,255,255,.8);margin-bottom:16px;}
+.evo-btn{background:#F59E0B;color:#fff;border:none;border-radius:12px;padding:11px 28px;font-size:14px;font-weight:600;cursor:pointer;}
+.title-progress{margin-top:6px;display:flex;align-items:center;gap:8px;}
+.title-bar-bg{flex:1;height:5px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;}
+.title-bar-fill{height:100%;background:#F59E0B;border-radius:3px;transition:width .4s;}
+.ach-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
+.ach-item{border-radius:var(--r);padding:10px 8px;text-align:center;transition:opacity .2s;}
+.ach-item.unlocked{background:linear-gradient(180deg,rgba(224,169,60,.18),rgba(224,169,60,.05));border:1px solid rgba(224,169,60,.5);box-shadow:0 0 14px rgba(224,169,60,.12);}
+.ach-item.locked{background:var(--bg3);border:1px solid var(--border);opacity:.4;filter:grayscale(1);}
+.ach-icon{font-size:22px;display:block;margin-bottom:4px;}
+.ach-name{font-size:11px;font-weight:600;color:var(--text);line-height:1.3;}
+.ach-desc{font-size:10px;color:var(--text2);margin-top:3px;line-height:1.4;}
+.ach-new-popup{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#6E1D16,#34160F);border:1px solid rgba(224,169,60,.5);color:#fff;border-radius:14px;padding:12px 20px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;box-shadow:0 4px 24px rgba(0,0,0,.45);z-index:999;animation:popIn .4s ease;pointer-events:none;}
+@keyframes popIn{from{opacity:0;transform:translateX(-50%) translateY(20px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+.th-today{background:rgba(211,58,44,.16);color:var(--oni)!important;border-radius:4px;}
+.cell-today{background:rgba(211,58,44,.08);}
 .add-kpi-btn{width:100%;padding:11px;background:none;color:var(--c-blue);border:1px dashed var(--c-blue);border-radius:var(--rm);font-size:13px;font-weight:500;cursor:pointer;margin-top:4px;margin-bottom:12px;-webkit-tap-highlight-color:transparent;}
 .add-kpi-btn:active{opacity:.7;}
-.del-kpi-btn{padding:4px 10px;background:#FEE2E2;color:#DC2626;border:none;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.exp-card{background:var(--bg2);border-radius:var(--r);padding:14px;margin-bottom:12px;}
+.del-kpi-btn{padding:4px 10px;background:rgba(224,72,59,.18);color:#FF8A7A;border:none;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.exp-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px;}
 .exp-btn{flex:1;padding:11px 6px;border-radius:var(--rm);font-size:13px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .exp-btn:active{opacity:.8;}
 </style>
 </head>
 <body>
 <div class="app">
-  <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">有言実金～鬼KPI管理～</h1>
+  <header class="app-header">
+    <h1 class="app-header-title">有言<span class="gd">実金</span></h1>
+    <div class="app-header-sub">鬼 K P I 管 理</div>
+  </header>
   <div class="tab-bar">
     <button class="tab active" onclick="showTab('weekly')">📅<br>週次</button>
     <button class="tab" onclick="showTab('monthly')">📊<br>月次</button>
@@ -215,6 +280,25 @@ const DB = {day:500, week:3500, month:25000};
 const DL = {day:'日次', week:'週次', month:'月次'};
 const MFC = 25000;
 const FU = ['募金する','家族へのプレゼントに使う','後輩への差し入れに使う'];
+const TITLES = [
+  {min:0,  icon:'🌱', char:'たまご',   name:'スタートライン',    sub:'まだ何も始まっていない'},
+  {min:1,  icon:'💪', char:'ちび鬼',   name:'KPI挑戦者',         sub:'第一歩を踏み出した'},
+  {min:5,  icon:'🔥', char:'こ鬼',     name:'本気モード',         sub:'習慣が形になってきた'},
+  {min:10, icon:'⚡', char:'わか鬼',   name:'鬼営業マン',         sub:'数字で語れる営業マン'},
+  {min:20, icon:'👑', char:'鬼武者',   name:'有言実金マスター',   sub:'言葉を行動で証明する者'},
+  {min:35, icon:'💎', char:'鬼神',     name:'伝説の営業',         sub:'到達者はほんの一握り'},
+];
+const ACH_LIST = [
+  {id:'first',   icon:'🎯', name:'初陣',       desc:'初めて達成を記録する',               check:s=>s.deposit.history.some(h=>h.result==='achieve')},
+  {id:'week1',   icon:'📅', name:'週の約束',   desc:'週次を初めて達成する',               check:s=>s.deposit.history.some(h=>h.result==='achieve'&&h.period==='week')},
+  {id:'month1',  icon:'🗓', name:'月の誓い',   desc:'月次を初めて達成する',               check:s=>s.deposit.history.some(h=>h.result==='achieve'&&h.period==='month')},
+  {id:'day3str', icon:'🌅', name:'朝活の鬼',   desc:'日次3回連続達成',                   check:s=>(s.deposit.maxStreaks.day||0)>=3},
+  {id:'day5str', icon:'⚡', name:'絶好調',     desc:'日次5回連続達成',                   check:s=>(s.deposit.maxStreaks.day||0)>=5},
+  {id:'all3',    icon:'🌟', name:'完全制覇',   desc:'日次・週次・月次すべて達成経験あり', check:s=>['day','week','month'].every(p=>s.deposit.history.some(h=>h.result==='achieve'&&h.period===p))},
+  {id:'day10',   icon:'💪', name:'鉄の意志',   desc:'日次を累計10回達成する',             check:s=>s.deposit.history.filter(h=>h.result==='achieve'&&h.period==='day').length>=10},
+  {id:'week5',   icon:'🔥', name:'週の鬼',     desc:'週次を5回達成する',                 check:s=>s.deposit.history.filter(h=>h.result==='achieve'&&h.period==='week').length>=5},
+  {id:'day30',   icon:'💎', name:'伝説の営業', desc:'日次を累計30回達成する',             check:s=>s.deposit.history.filter(h=>h.result==='achieve'&&h.period==='day').length>=30},
+];
 const AU = ['好きな食事・外食に使う','好きなものを買う','サウナ・マッサージ・旅行に使う','貯金・次の預け金として積み立てる'];
 const AI = ['🍣','🛍️','🧖','💰'];
 const FI = ['🙏','🎁','🍱'];
@@ -250,6 +334,16 @@ ST.kpis.forEach(k => {
 });
 if (!ST.deposit) ST.deposit = {streaks:{day:0,week:0,month:0}, monthlyForfeit:{}, history:[], judged:{}};
 if (!ST.deposit.judged) ST.deposit.judged = {};
+if (!ST.deposit.maxStreaks) ST.deposit.maxStreaks = {day:0,week:0,month:0};
+if (!ST.deposit.unlockedAch) ST.deposit.unlockedAch = [];
+if (ST.deposit.rankPoints === undefined) {
+  ST.deposit.rankPoints = (ST.deposit.history||[]).filter(h=>h.result==='achieve').length;
+}
+if (ST.deposit.failStreak === undefined) ST.deposit.failStreak = 0;
+if (ST.deposit.charStage === undefined) {
+  let s=0; [0,1,5,10,20,35].forEach((m,i)=>{ if(ST.deposit.rankPoints>=m) s=i; });
+  ST.deposit.charStage = s;
+}
 if (!ST.rewards) ST.rewards = JSON.parse(JSON.stringify(RL));
 if (!ST.depositConfig) ST.depositConfig = {amounts:{day:500,week:3500,month:25000}, cap:25000};
 
@@ -337,7 +431,7 @@ function updatePeriodBtn(cId, period, pct, jKey, isDay) {
       '<div class="judge-inline judge-inline-achieve" onclick="openDepJudge(\'' + period + '\',\'achieve\',\'' + jKey + '\')">' +
         '<span style="font-size:22px;flex-shrink:0;">🎉</span>' +
         '<div style="flex:1;">' +
-          '<div style="font-size:13px;font-weight:500;color:#16A34A;">' + pl + '達成！' + pct + '%</div>' +
+          '<div style="font-size:13px;font-weight:600;color:#4ED88D;">' + pl + '達成！' + pct + '%</div>' +
           '<div style="font-size:11px;margin-top:2px;color:var(--text2);">タップして預け金' + fmt(amt) + 'を受け取る</div>' +
         '</div>' +
         '<span style="font-size:14px;color:var(--text2);">›</span>' +
@@ -347,7 +441,7 @@ function updatePeriodBtn(cId, period, pct, jKey, isDay) {
       '<div class="judge-inline judge-inline-fail" onclick="openDepJudge(\'' + period + '\',\'fail\',\'' + jKey + '\')">' +
         '<span style="font-size:22px;flex-shrink:0;">😢</span>' +
         '<div style="flex:1;">' +
-          '<div style="font-size:13px;font-weight:500;color:#DC2626;">' + pl + '未達…' + pct + '%</div>' +
+          '<div style="font-size:13px;font-weight:600;color:#FF8A7A;">' + pl + '未達…' + pct + '%</div>' +
           '<div style="font-size:11px;margin-top:2px;color:var(--text2);">タップして預け金' + fmt(amt) + 'の処理をする</div>' +
         '</div>' +
         '<span style="font-size:14px;color:var(--text2);">›</span>' +
@@ -383,8 +477,8 @@ function openDepJudge(period, result, jKey) {
     document.getElementById('sh-title').textContent = pl + '達成！預け金を獲得';
     document.getElementById('sh-sub').textContent   = fmt(amount) + 'を自分の報酬に使えます！';
     document.getElementById('sh-body').innerHTML =
-      '<div style="background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:var(--r);padding:14px;margin-bottom:16px;text-align:center;">' +
-        '<div style="font-size:28px;font-weight:500;color:#78350F;">' + fmt(amount) + '</div>' +
+      '<div style="background:rgba(224,169,60,.14);border:1.5px solid rgba(224,169,60,.5);border-radius:var(--r);padding:14px;margin-bottom:16px;text-align:center;">' +
+        '<div style="font-size:28px;font-weight:600;color:#E8BC5E;">' + fmt(amount) + '</div>' +
       '</div>' +
       '<div class="usage-opts">' +
         AU.map((u,i) =>
@@ -404,9 +498,9 @@ function openDepJudge(period, result, jKey) {
     document.getElementById('sh-title').textContent = pl + '未達…預け金を没収';
     document.getElementById('sh-sub').textContent   = fmt(af) + 'は24時間以内に募金してください。';
     document.getElementById('sh-body').innerHTML =
-      '<div style="background:#FEE2E2;border:1.5px solid #FCA5A5;border-radius:var(--r);padding:14px;margin-bottom:' + (capHit?'8px':'14px') + ';text-align:center;">' +
-        '<div style="font-size:28px;font-weight:500;color:#7F1D1D;">' + fmt(af) + '</div>' +
-        (capHit ? '<div style="font-size:11px;color:#991B1B;margin-top:4px;">月間上限により減額</div>' : '') +
+      '<div style="background:rgba(224,72,59,.16);border:1.5px solid rgba(224,72,59,.5);border-radius:var(--r);padding:14px;margin-bottom:' + (capHit?'8px':'14px') + ';text-align:center;">' +
+        '<div style="font-size:28px;font-weight:600;color:#FF8A7A;">' + fmt(af) + '</div>' +
+        (capHit ? '<div style="font-size:11px;color:#F2B0A4;margin-top:4px;">月間上限により減額</div>' : '') +
       '</div>' +
       (capHit ? '<div class="cap-warn">⚠️ 今月の没収上限' + fmt(ST.depositConfig.cap) + 'に到達。</div>' : '') +
       '<div class="usage-opts">' +
@@ -430,22 +524,37 @@ function confirmDep() {
   const {period,result,amount,actualForfeit,judgedKey} = dCtx;
   const mk = mkKey();
   if (judgedKey) ST.deposit.judged[judgedKey] = true;
+  let demoted = false;
   if (result === 'achieve') {
     ST.deposit.streaks[period] = 0;
+    ST.deposit.failStreak = 0;            // 達成で連続未達リセット
+    ST.deposit.rankPoints = (ST.deposit.rankPoints||0) + 1;  // ランクスコア +1
     const use = AU[modalSel] || AU[0];
     ST.deposit.history.unshift({period,result:'achieve',amount,use,date:toStr(),note:use});
+    // 達成連続数を追跡（履歴から直近の連続達成数を計算してmaxStreaksを更新）
+    const dayAchs = ST.deposit.history.filter(h=>h.period===period);
+    let streak = 0;
+    for (const h of dayAchs) { if (h.result==='achieve') streak++; else break; }
+    if (streak > (ST.deposit.maxStreaks[period]||0)) ST.deposit.maxStreaks[period] = streak;
   } else if (result === 'fail') {
     ST.deposit.streaks[period] = (ST.deposit.streaks[period]||0) + 1;
+    ST.deposit.failStreak = (ST.deposit.failStreak||0) + 1;  // 連続未達カウント
     const forfeit = actualForfeit || amount;
     if (!ST.deposit.monthlyForfeit[mk]) ST.deposit.monthlyForfeit[mk] = 0;
     ST.deposit.monthlyForfeit[mk] += forfeit;
     const use = FU[modalSel] || FU[0];
     ST.deposit.history.unshift({period,result:'fail',amount:forfeit,use,date:toStr(),note:use});
+    // 3回連続未達 → 1ランク退化
+    if (ST.deposit.failStreak >= 3) {
+      const cur = getTitle().idx;
+      if (cur > 0) { ST.deposit.rankPoints = TITLES[cur].min - 1; demoted = true; }
+      ST.deposit.failStreak = 0;
+    }
   } else {
     ST.deposit.history.unshift({period,result:'exception',amount:0,use:'例外',date:toStr(),note:'例外適用'});
   }
   if (ST.deposit.history.length > 60) ST.deposit.history.pop();
-  sv(); closeModal(); updateJudgeBanners();
+  sv(); checkAchievements(); syncCharStage(demoted); closeModal(); updateJudgeBanners();
   if (document.getElementById('tab-deposit').classList.contains('active')) renderDeposit();
 }
 
@@ -491,18 +600,18 @@ function bannerHTML(period) {
   const icons = {day:'📅',week:'🏆',month:'🏅'}, pl = DL[period];
   return (
     '<div class="banner-row">' +
-      '<div class="ach-banner" style="background:#F0FDF4;border-color:#86EFAC;" onclick="openRewardModal(\'' + period + '\',true)">' +
+      '<div class="ach-banner" style="background:rgba(52,194,122,.12);border-color:rgba(52,194,122,.45);" onclick="openRewardModal(\'' + period + '\',true)">' +
         '<span style="font-size:18px;">' + icons[period] + '</span>' +
         '<div style="flex:1;">' +
-          '<div style="font-size:12px;font-weight:500;color:#16A34A;">' + pl + '達成</div>' +
+          '<div style="font-size:12px;font-weight:600;color:#4ED88D;">' + pl + '達成</div>' +
           '<div style="font-size:10px;color:var(--text2);margin-top:1px;">報酬を選ぶ</div>' +
         '</div>' +
         '<span style="font-size:12px;color:var(--text2);">›</span>' +
       '</div>' +
-      '<div class="ach-banner" style="background:#FEF2F2;border-color:#FCA5A5;" onclick="openRewardModal(\'' + period + '\',false)">' +
+      '<div class="ach-banner" style="background:rgba(224,72,59,.12);border-color:rgba(224,72,59,.45);" onclick="openRewardModal(\'' + period + '\',false)">' +
         '<span style="font-size:18px;">💀</span>' +
         '<div style="flex:1;">' +
-          '<div style="font-size:12px;font-weight:500;color:#DC2626;">' + pl + '未達</div>' +
+          '<div style="font-size:12px;font-weight:600;color:#FF8A7A;">' + pl + '未達</div>' +
           '<div style="font-size:10px;color:var(--text2);margin-top:1px;">罰ゲームを引く</div>' +
         '</div>' +
         '<span style="font-size:12px;color:var(--text2);">›</span>' +
@@ -728,6 +837,122 @@ function renderYearly() {
   });
 }
 
+function getTitle() {
+  const total = ST.deposit.rankPoints || 0;
+  let t = TITLES[0];
+  for (const ti of TITLES) { if (total >= ti.min) t = ti; }
+  const idx = TITLES.indexOf(t);
+  const next = TITLES[idx+1];
+  const pct = next ? Math.min(100, Math.round((total - t.min) / (next.min - t.min) * 100)) : 100;
+  return {t, next, total, pct, idx};
+}
+function charSVG(stage) {
+  const S = {
+    0: '<ellipse cx="50" cy="56" rx="27" ry="33" fill="#F7ECD3" stroke="#E2CFA3" stroke-width="2.5"/>' +
+       '<ellipse cx="41" cy="44" rx="5" ry="8" fill="#fff" opacity="0.55"/>' +
+       '<circle cx="42" cy="66" r="3.5" fill="#E2CFA3" opacity="0.7"/><circle cx="59" cy="60" r="2.8" fill="#E2CFA3" opacity="0.7"/><circle cx="54" cy="73" r="3.2" fill="#E2CFA3" opacity="0.7"/>' +
+       '<path d="M40 38 l5 4 l-4 4 l5 4" fill="none" stroke="#C9A876" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+    1: '<circle cx="50" cy="34" r="4.5" fill="#FFE0A0" stroke="#EBC477" stroke-width="1"/>' +
+       '<ellipse cx="50" cy="58" rx="22" ry="21" fill="#FFC2A8"/>' +
+       '<circle cx="43" cy="57" r="4" fill="#3A2A2A"/><circle cx="57" cy="57" r="4" fill="#3A2A2A"/>' +
+       '<circle cx="44.3" cy="55.5" r="1.5" fill="#fff"/><circle cx="58.3" cy="55.5" r="1.5" fill="#fff"/>' +
+       '<circle cx="38" cy="63" r="3.5" fill="#FF7A7A" opacity="0.45"/><circle cx="62" cy="63" r="3.5" fill="#FF7A7A" opacity="0.45"/>' +
+       '<path d="M46 64 Q50 68 54 64" fill="none" stroke="#3A2A2A" stroke-width="2" stroke-linecap="round"/>',
+    2: '<path d="M50 11 L44 34 L56 34 Z" fill="#FFD56B" stroke="#E8B84B" stroke-width="1.3"/>' +
+       '<ellipse cx="50" cy="58" rx="27" ry="25" fill="#FF8A3D"/>' +
+       '<path d="M37 50 L46 52.5" stroke="#C85A1E" stroke-width="2.2" stroke-linecap="round"/><path d="M63 50 L54 52.5" stroke="#C85A1E" stroke-width="2.2" stroke-linecap="round"/>' +
+       '<ellipse cx="43" cy="57" rx="4" ry="4.8" fill="#3A2A2A"/><ellipse cx="57" cy="57" rx="4" ry="4.8" fill="#3A2A2A"/>' +
+       '<circle cx="44.2" cy="55.2" r="1.4" fill="#fff"/><circle cx="58.2" cy="55.2" r="1.4" fill="#fff"/>' +
+       '<path d="M44 65 Q50 69 56 65" fill="none" stroke="#3A2A2A" stroke-width="2.2" stroke-linecap="round"/>' +
+       '<path d="M48 66 L50 70 L52 66 Z" fill="#fff"/>',
+    3: '<path d="M35 32 L28 11 L43 26 Z" fill="#FFD56B" stroke="#E8B84B" stroke-width="1.3"/><path d="M65 32 L72 11 L57 26 Z" fill="#FFD56B" stroke="#E8B84B" stroke-width="1.3"/>' +
+       '<ellipse cx="50" cy="60" rx="31" ry="29" fill="#E63946"/>' +
+       '<path d="M80 47 l11 -4 l-3 8 z" fill="#2563EB"/>' +
+       '<rect x="20" y="43" width="60" height="8.5" rx="4" fill="#2563EB"/>' +
+       '<circle cx="50" cy="47.2" r="5.2" fill="#fff"/><text x="50" y="50.6" font-size="6.5" text-anchor="middle" fill="#DC2626" font-weight="bold">力</text>' +
+       '<path d="M34 57 L45 60" stroke="#A81F2B" stroke-width="2.6" stroke-linecap="round"/><path d="M66 57 L55 60" stroke="#A81F2B" stroke-width="2.6" stroke-linecap="round"/>' +
+       '<ellipse cx="42" cy="64" rx="4.6" ry="5.6" fill="#3A2A2A"/><ellipse cx="58" cy="64" rx="4.6" ry="5.6" fill="#3A2A2A"/>' +
+       '<circle cx="43.5" cy="62" r="1.6" fill="#fff"/><circle cx="59.5" cy="62" r="1.6" fill="#fff"/>' +
+       '<path d="M43 73 Q50 77 57 73" fill="none" stroke="#3A2A2A" stroke-width="2.4" stroke-linecap="round"/>' +
+       '<path d="M46 74 L48 78 L50 74 Z" fill="#fff"/><path d="M50 74 L52 78 L54 74 Z" fill="#fff"/>',
+    4: '<path d="M28 80 q-3 -10 4 -14 q-1 8 4 6 q-2 9 -8 8 Z" fill="#FF8A33" opacity="0.85"/><path d="M72 80 q3 -10 -4 -14 q1 8 -4 6 q2 9 8 8 Z" fill="#FF8A33" opacity="0.85"/>' +
+       '<ellipse cx="50" cy="58" rx="31" ry="29" fill="#D63B22"/>' +
+       '<path d="M33 31 L25 9 L42 25 Z" fill="#FFD56B" stroke="#D89B2E" stroke-width="1.4"/><path d="M67 31 L75 9 L58 25 Z" fill="#FFD56B" stroke="#D89B2E" stroke-width="1.4"/>' +
+       '<rect x="19" y="42" width="62" height="8" rx="4" fill="#1F2937"/><circle cx="50" cy="46" r="5.2" fill="#DC2626"/>' +
+       '<path d="M33 55 L46 60" stroke="#8F2414" stroke-width="3" stroke-linecap="round"/><path d="M67 55 L54 60" stroke="#8F2414" stroke-width="3" stroke-linecap="round"/>' +
+       '<ellipse cx="42" cy="63" rx="4.8" ry="5.5" fill="#FFE08A"/><ellipse cx="58" cy="63" rx="4.8" ry="5.5" fill="#FFE08A"/>' +
+       '<circle cx="42" cy="63" r="2.3" fill="#3A2A2A"/><circle cx="58" cy="63" r="2.3" fill="#3A2A2A"/>' +
+       '<path d="M63 52 L67 60" stroke="#8F2414" stroke-width="1.6" stroke-linecap="round"/>' +
+       '<path d="M40 71 Q50 78 60 71 Z" fill="#3A2A2A"/><path d="M43 71 L45 76 L47 71 Z" fill="#fff"/><path d="M53 71 L55 76 L57 71 Z" fill="#fff"/>',
+    5: '<defs><radialGradient id="auraG" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFE9A8" stop-opacity="0.9"/><stop offset="100%" stop-color="#FFB020" stop-opacity="0"/></radialGradient>' +
+       '<linearGradient id="goldG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFF0C0"/><stop offset="55%" stop-color="#F4B23C"/><stop offset="100%" stop-color="#D98A1F"/></linearGradient></defs>' +
+       '<circle cx="50" cy="55" r="48" fill="url(#auraG)"/>' +
+       '<path d="M16 72 q-6 -15 3 -23 q-2 11 6 8 q-3 13 -9 15 Z" fill="#FF8A33" opacity="0.9"/><path d="M84 72 q6 -15 -3 -23 q2 11 -6 8 q3 13 9 15 Z" fill="#FF8A33" opacity="0.9"/>' +
+       '<ellipse cx="50" cy="57" rx="31" ry="29" fill="url(#goldG)"/>' +
+       '<path d="M32 30 L23 6 L42 24 Z" fill="#FFF6DC" stroke="#D89B2E" stroke-width="1.4"/><path d="M68 30 L77 6 L58 24 Z" fill="#FFF6DC" stroke="#D89B2E" stroke-width="1.4"/>' +
+       '<path d="M36 30 L36 19 L43 26 L50 16 L57 26 L64 19 L64 30 Z" fill="#FFD93B" stroke="#E0A92E" stroke-width="1"/><circle cx="50" cy="22" r="2" fill="#DC2626"/>' +
+       '<path d="M33 54 L46 59" stroke="#B5781C" stroke-width="3" stroke-linecap="round"/><path d="M67 54 L54 59" stroke="#B5781C" stroke-width="3" stroke-linecap="round"/>' +
+       '<ellipse cx="42" cy="62" rx="5" ry="5.8" fill="#fff"/><ellipse cx="58" cy="62" rx="5" ry="5.8" fill="#fff"/>' +
+       '<circle cx="42" cy="62" r="2.4" fill="#DC2626"/><circle cx="58" cy="62" r="2.4" fill="#DC2626"/>' +
+       '<path d="M39 70 Q50 79 61 70 Z" fill="#7A1B0E"/><path d="M42 70 L44 76 L46 70 Z" fill="#fff"/><path d="M54 70 L56 76 L58 70 Z" fill="#fff"/>' +
+       '<path d="M38 73 q-4 6 -2 12" fill="none" stroke="#FFF0C0" stroke-width="2" stroke-linecap="round"/><path d="M62 73 q4 6 2 12" fill="none" stroke="#FFF0C0" stroke-width="2" stroke-linecap="round"/>'
+  };
+  return '<svg viewBox="0 0 100 100" class="char-svg">' + (S[stage] || S[0]) + '</svg>';
+}
+function checkAchievements() {
+  const before = ST.deposit.unlockedAch.length;
+  const newlyUnlocked = [];
+  ACH_LIST.forEach(a => {
+    if (!ST.deposit.unlockedAch.includes(a.id) && a.check(ST)) {
+      ST.deposit.unlockedAch.push(a.id);
+      newlyUnlocked.push(a);
+    }
+  });
+  if (newlyUnlocked.length) { sv(); newlyUnlocked.forEach(a => showAchPopup(a)); }
+}
+function showAchPopup(a) {
+  const el = document.createElement('div');
+  el.className = 'ach-new-popup';
+  el.innerHTML = '<span style="font-size:22px;">' + a.icon + '</span><div><div style="font-size:11px;opacity:.8;margin-bottom:2px;">実績解除！</div>' + a.name + '</div>';
+  document.body.appendChild(el);
+  setTimeout(() => { el.style.transition='opacity .5s'; el.style.opacity='0'; setTimeout(()=>el.remove(),500); }, 3000);
+}
+function syncCharStage(demoted) {
+  const {idx} = getTitle();
+  const prev = ST.deposit.charStage||0;
+  if (idx > prev) { ST.deposit.charStage = idx; sv(); showEvoPopup(idx); }
+  else if (idx < prev) { ST.deposit.charStage = idx; sv(); showDevoPopup(idx, prev); }
+}
+function showDevoPopup(stage, fromStage) {
+  const t = TITLES[stage], from = TITLES[fromStage];
+  const ov = document.createElement('div');
+  ov.className = 'evo-overlay';
+  ov.innerHTML =
+    '<div class="evo-box devo-box">' +
+      '<div class="evo-label" style="color:#FCA5A5;">💧 退化してしまった… 💧</div>' +
+      '<div class="evo-char" style="filter:grayscale(.3) brightness(.95);">' + charSVG(stage) + '</div>' +
+      '<div class="evo-name">' + from.char + ' → ' + t.char + '</div>' +
+      '<div class="evo-rank">3回連続未達でランクダウン<br>称号：' + t.icon + ' ' + t.name + '</div>' +
+      '<button class="evo-btn" style="background:#DC2626;" onclick="this.closest(\'.evo-overlay\').remove()">次は必ずやる</button>' +
+    '</div>';
+  ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
+  document.body.appendChild(ov);
+}
+function showEvoPopup(stage) {
+  const t = TITLES[stage];
+  const ov = document.createElement('div');
+  ov.className = 'evo-overlay';
+  ov.innerHTML =
+    '<div class="evo-box">' +
+      '<div class="evo-label">✨ 進化した！ ✨</div>' +
+      '<div class="evo-char">' + charSVG(stage) + '</div>' +
+      '<div class="evo-name">' + t.char + '</div>' +
+      '<div class="evo-rank">称号：' + t.icon + ' ' + t.name + '</div>' +
+      '<button class="evo-btn" onclick="this.closest(\'.evo-overlay\').remove()">おう！</button>' +
+    '</div>';
+  ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
+  document.body.appendChild(ov);
+}
 function renderDeposit() {
   const h=ST.deposit.history;
   const tA=h.filter(x=>x.result==='achieve').reduce((s,x)=>s+x.amount,0);
@@ -742,16 +967,41 @@ function renderDeposit() {
     '例外は体調不良・仕事/家族の緊急対応・災害事故のみ',
     '月間の没収上限は'+fmt(ST.depositConfig.cap)+'。上限到達後は没収なし',
     '2回連続未達で×1.5倍、3回以上で×2倍（設定額が基準）',
+    '3回連続で未達すると相棒が1ランク退化する（達成でリセット）',
     '金額は設定タブの「預け金の金額設定」からいつでも変更可'
   ];
+  const {t, next, total, pct, idx} = getTitle();
+  const achGrid = ACH_LIST.map(a => {
+    const unlocked = ST.deposit.unlockedAch.includes(a.id);
+    return '<div class="ach-item ' + (unlocked?'unlocked':'locked') + '">' +
+      '<span class="ach-icon">' + a.icon + '</span>' +
+      '<div class="ach-name">' + a.name + '</div>' +
+      '<div class="ach-desc">' + a.desc + '</div>' +
+    '</div>';
+  }).join('');
+
+  const fs = ST.deposit.failStreak || 0;
+  const devoWarn = (fs >= 1 && idx > 0)
+    ? '<div class="devo-warn">⚠️ 連続未達' + fs + '回　あと<b style="margin:0 2px;">' + (3 - fs) + '回</b>で退化…！</div>'
+    : '';
   let html =
+    '<div class="buddy-card">' +
+      '<div class="buddy-char">' + charSVG(idx) + '</div>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div class="buddy-tag">相棒 Lv.' + idx + '　' + t.char + '</div>' +
+        '<div class="title-name">' + t.icon + ' ' + t.name + '</div>' +
+        '<div class="title-sub">' + t.sub + '</div>' +
+        (next ? '<div class="title-progress"><div class="title-bar-bg"><div class="title-bar-fill" style="width:' + pct + '%;"></div></div></div><div style="font-size:10px;color:rgba(255,255,255,.65);margin-top:3px;">次の進化 ' + next.char + ' まで <b style="color:#FFD166;">あと' + (next.min - total) + '回</b>（達成スコア ' + total + '）</div>' : '<div style="font-size:10px;color:#FFD166;margin-top:4px;">👑 最終進化に到達！達成スコア ' + total + '</div>') +
+        devoWarn +
+      '</div>' +
+    '</div>' +
     '<div class="dep-hero">' +
-      '<div style="font-size:11px;font-weight:500;color:#92400E;letter-spacing:.05em;margin-bottom:10px;">🔥 有言実金～鬼KPI管理～</div>' +
+      '<div style="font-size:11px;font-weight:700;color:#E8BC5E;letter-spacing:.05em;margin-bottom:10px;">🔥 今月の戦績</div>' +
       '<div class="d-grid">' +
-        '<div class="d-stat"><div class="d-sl">達成で獲得（累計）</div><div class="d-sv" style="color:#16A34A;">' + fmt(tA) + '</div></div>' +
-        '<div class="d-stat"><div class="d-sl">未達で没収（累計）</div><div class="d-sv" style="color:#DC2626;">' + fmt(tF) + '</div></div>' +
-        '<div class="d-stat"><div class="d-sl">今月の没収額</div><div class="d-sv" style="color:' + (tmf>=ST.depositConfig.cap?'#DC2626':'#B45309') + ';">' + fmt(tmf) + '</div></div>' +
-        '<div class="d-stat"><div class="d-sl">今月の没収残枠</div><div class="d-sv" style="color:#0F6E56;">' + fmt(rem) + '</div></div>' +
+        '<div class="d-stat"><div class="d-sl">達成で獲得（累計）</div><div class="d-sv" style="color:#4ED88D;">' + fmt(tA) + '</div></div>' +
+        '<div class="d-stat"><div class="d-sl">未達で没収（累計）</div><div class="d-sv" style="color:#FF8A7A;">' + fmt(tF) + '</div></div>' +
+        '<div class="d-stat"><div class="d-sl">今月の没収額</div><div class="d-sv" style="color:' + (tmf>=ST.depositConfig.cap?'#FF8A7A':'#E8BC5E') + ';">' + fmt(tmf) + '</div></div>' +
+        '<div class="d-stat"><div class="d-sl">今月の没収残枠</div><div class="d-sv" style="color:#4ED88D;">' + fmt(rem) + '</div></div>' +
       '</div>' +
     '</div>';
 
@@ -763,12 +1013,12 @@ function renderDeposit() {
     else if (streak===1) sk = '<span class="sk-badge sk-w">1回連続未達（次回×1.5倍）</span>';
     else if (streak===2) sk = '<span class="sk-badge sk-w">2回連続未達 → 現在×1.5倍</span>';
     else                 sk = '<span class="sk-badge sk-d">' + streak + '回連続未達 → 現在×2倍</span>';
-    const ac = cur>base ? '#DC2626' : '#B45309';
+    const ac = cur>base ? '#FF8A7A' : '#E8BC5E';
     html +=
       '<div class="p-card">' +
         '<div class="p-head">' +
           '<span class="p-label">' + pl + '預け金</span>' +
-          '<span style="font-size:12px;font-weight:500;padding:3px 10px;border-radius:20px;background:#FEF3C7;color:' + ac + ';">' + fmt(cur) + (cur>base?' (基本'+fmt(base)+')':'') + '</span>' +
+          '<span style="font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(224,169,60,.16);color:' + ac + ';">' + fmt(cur) + (cur>base?' (基本'+fmt(base)+')':'') + '</span>' +
         '</div>' +
         sk +
         '<div style="font-size:11px;color:var(--text2);margin-bottom:8px;">判定タイミング：' + timing + '　達成基準：全KPI平均80%以上</div>' +
@@ -786,6 +1036,13 @@ function renderDeposit() {
     '<div class="card" style="margin-top:4px;">' +
       '<div class="sec-title">有言実金ルール</div>' +
       RULES.map((r,i) => '<div class="rule-item"><span class="rn">'+(i+1)+'</span><span>'+r+'</span></div>').join('') +
+    '</div>';
+
+  html +=
+    '<div class="card" style="margin-top:4px;">' +
+      '<div class="sec-title" style="margin-bottom:4px;">🏅 実績バッジ</div>' +
+      '<div style="font-size:11px;color:var(--text2);margin-bottom:10px;">達成を重ねると解除されます</div>' +
+      '<div class="ach-grid">' + achGrid + '</div>' +
     '</div>';
 
   html += '<div class="sec-title" style="margin-top:4px;">判定履歴</div>';
@@ -829,8 +1086,8 @@ function renderDepositConfigCard() {
       '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;' + border + '">' +
         '<span style="flex:1;font-size:13px;color:var(--text);">' + r.label + '</span>' +
         '<button class="btn-minus" style="width:34px;height:34px;" onclick="' + decCall + '">−</button>' +
-        '<span id="depcfg-' + r.key + '" class="tap-display" style="min-width:62px;text-align:center;font-size:14px;font-weight:600;color:#B45309;">' + fmt(val) + '</span>' +
-        '<button class="btn-plus" style="background:#B45309;width:34px;height:34px;font-size:20px;" onclick="' + incCall + '">+</button>' +
+        '<span id="depcfg-' + r.key + '" class="tap-display" style="min-width:62px;text-align:center;font-size:14px;font-weight:600;color:#E8BC5E;">' + fmt(val) + '</span>' +
+        '<button class="btn-plus" style="background:#C8841F;width:34px;height:34px;font-size:20px;" onclick="' + incCall + '">+</button>' +
       '</div>'
     );
   }).join('');
@@ -950,7 +1207,7 @@ function renderSettings() {
         <li>封筒は「達成分＝自分の報酬予算」「未達分＝翌24時間以内に募金」として管理する</li>
         <li>達成判定は全KPI平均80%以上。1件でも大きく未達だと平均が下がるので注意</li>
       </ul>
-      <div style="background:#FEF3C7;border-radius:8px;padding:8px 10px;margin-bottom:12px;font-size:11px;color:#92400E;line-height:1.7;">
+      <div style="background:rgba(224,169,60,.14);border:1px solid rgba(224,169,60,.3);border-radius:8px;padding:8px 10px;margin-bottom:12px;font-size:11px;color:#E8BC5E;line-height:1.7;">
         ⚠️ 預け金は「あらかじめ封筒に入れる」ことに意味がある。達成してから入れるのではなく、<b>先払いでコミット</b>するのがルール。
       </div>
 
@@ -972,7 +1229,7 @@ function renderSettings() {
         <li>報酬・罰ゲームの内容は設定タブから自由に編集・追加・削除できる</li>
         <li>ガチャ結果は気に入らなくても原則そのまま実行すること。それが緊張感を生む</li>
       </ul>
-      <div style="background:#F0FDF4;border-radius:8px;padding:8px 10px;margin-bottom:12px;font-size:11px;color:#15803D;line-height:1.7;">
+      <div style="background:rgba(52,194,122,.12);border:1px solid rgba(52,194,122,.3);border-radius:8px;padding:8px 10px;margin-bottom:12px;font-size:11px;color:#4ED88D;line-height:1.7;">
         💡 報酬は「達成した自分へのご褒美」として封筒の預け金を使って本当に実行すること。罰ゲームも必ず実行することで緊張感が続く。
       </div>
 
@@ -1049,7 +1306,7 @@ function rlItemHTML(period, type, i, val) {
       '<span style="flex:1;font-size:12px;color:var(--text);line-height:1.5;">'+escH(val)+'</span>' +
       '<div style="display:flex;gap:4px;flex-shrink:0;margin-left:4px;">' +
         '<button onclick="editRL(\''+period+'\',\''+type+'\','+i+')" style="font-size:11px;padding:4px 8px;background:var(--bg2);border:0.5px solid var(--border);border-radius:5px;color:var(--text2);cursor:pointer;-webkit-tap-highlight-color:transparent;">✏️</button>' +
-        '<button onclick="deleteRL(\''+period+'\',\''+type+'\','+i+')" style="font-size:11px;padding:4px 8px;background:#FEE2E2;border:none;border-radius:5px;color:#DC2626;cursor:pointer;-webkit-tap-highlight-color:transparent;">🗑</button>' +
+        '<button onclick="deleteRL(\''+period+'\',\''+type+'\','+i+')" style="font-size:11px;padding:4px 8px;background:rgba(224,72,59,.18);border:none;border-radius:5px;color:#FF8A7A;cursor:pointer;-webkit-tap-highlight-color:transparent;">🗑</button>' +
       '</div>' +
     '</div>'
   );
@@ -1064,7 +1321,7 @@ function rlFooterHTML(period, type) {
 }
 function renderRewardCard() {
   const PL={day:'日次',week:'週次',month:'月次'}, TL={reward:'🎉 報酬',penalty:'💀 罰ゲーム'};
-  const TC={reward:'#16A34A',penalty:'#DC2626'}, TBG={reward:'#F0FDF4',penalty:'#FEF2F2'};
+  const TC={reward:'#4ED88D',penalty:'#FF8A7A'}, TBG={reward:'rgba(52,194,122,.12)',penalty:'rgba(224,72,59,.12)'};
   let html = '<div class="card" style="margin-top:4px;"><div class="sec-title" style="margin-bottom:10px;">報酬・罰ゲーム 一覧 / 編集</div>';
   ['day','week','month'].forEach(period => {
     ['reward','penalty'].forEach(type => {
