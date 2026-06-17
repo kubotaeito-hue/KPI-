@@ -1,0 +1,12 @@
+# OS / エディタ
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+*~
+
+# ローカル設定（必要なら各自で）
+.claude/settings.local.json
+
+# バックアップ
+kpi_backup_*.json
